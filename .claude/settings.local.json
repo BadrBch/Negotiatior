@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run build:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npm start)",
+      "Bash(npm run:*)",
+      "mcp__ide__getDiagnostics",
+      "Bash(node:*)",
+      "Bash(rm:*)",
+      "Bash(git init:*)",
+      "Bash(git add:*)"
+    ],
+    "deny": [],
+    "ask": [],
+    "defaultMode": "acceptEdits"
+  }
+}
