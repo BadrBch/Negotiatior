@@ -971,12 +971,19 @@ function App() {
       const currentRounds = newNegotiation.getCurrentRounds()
       if (currentRounds.length > 0) {
         const r0 = currentRounds[0]
+        let initialMessage = `$${r0.bid.toFixed(2)}K`
+        
+        // Add verbiage if present for initial seller bid
+        if (r0.verbiage) {
+          initialMessage += `\n\n"${r0.verbiage}"`
+        }
+        
         const msgs: TranscriptMessage[] = [{
           id: 1,
           timestamp: r0.timestamp,
           type: 'robot1',
           speaker: 'Seller',
-          message: `$${r0.bid.toFixed(2)}K`,
+          message: initialMessage,
           title: 'Starting Price',
         }]
         setTranscriptMessages(msgs)
@@ -1055,7 +1062,12 @@ function App() {
           // Add new bid to transcript
           const type = nextBid.agent === 'seller' ? 'robot1' : 'robot2'
           const speaker = nextBid.agent === 'seller' ? 'Seller' : 'Buyer'
-          const msg = `$${nextBid.bid.toFixed(2)}K`
+          let msg = `$${nextBid.bid.toFixed(2)}K`
+          
+          // Add verbiage for seller bids
+          if (nextBid.agent === 'seller' && nextBid.verbiage) {
+            msg += `\n\n"${nextBid.verbiage}"`
+          }
           
           return [...withoutLoading, {
             id: withoutLoading.length + 1,

@@ -27,6 +27,7 @@ export interface BidRecord {
   calculation_range: { lower: number; upper: number };
   batna_constraint_check: { valid: boolean; reason: string };
   timestamp: string;
+  verbiage?: string; // Seller negotiation language (V1 generator)
 }
 
 export interface PostNegotiationAnalysis {
@@ -140,6 +141,171 @@ function uniform(rand: () => number, a: number, b: number): number {
 // Quantize to nearest 0.5 (values are in thousands)
 function roundToHalf(value: number): number {
   return Math.round(value * 2) / 2;
+}
+
+// V1 Verbiage Generator for Seller Negotiation Language
+const VERBIAGE_SENTENCES = {
+  // Soft Sentences (1-50): When V1 = FALSE
+  soft: [
+    "I really like this; is there any small way to make it even better?",
+    "We're close — could we add something minor to smooth it out?",
+    "This looks solid; maybe a small touch could make it more appealing.",
+    "I'm nearly there with you — could we find a little sweetener?",
+    "Everything lines up well; just wondering if there's a light improvement possible.",
+    "You've built a fair proposal; maybe a slight adjustment would seal it.",
+    "This is strong; a small addition would really make it stand out.",
+    "I like what's here — can we polish it a little?",
+    "The offer works; a tiny improvement would help me decide quicker.",
+    "I see value here — could we add something to balance it?",
+    "The structure is great; a little more would make it perfect.",
+    "This proposal is almost there; a gentle enhancement would close it.",
+    "I think we're aligned — can we make it a bit more inviting?",
+    "I appreciate this; maybe we can enrich it slightly.",
+    "You've done well — perhaps a light sweetener would finish it.",
+    "I'm comfortable, but one more small step could secure it.",
+    "This already feels good — could we fine-tune it further?",
+    "The numbers are fair; maybe a small sweetener makes it complete.",
+    "I'm inclined to agree; could you add just a little more?",
+    "The deal is sound; a tiny improvement would make it excellent.",
+    "You've given me a good option — could we soften it slightly?",
+    "I'm positive on this; a bit more would really settle it.",
+    "The framework is right; could we polish the details?",
+    "This is promising — could you add a finishing touch?",
+    "It's a fair balance; perhaps we can make it a little sweeter.",
+    "We're close; can you refine it just a touch more?",
+    "This works; maybe a small add-on makes it stronger.",
+    "I'd be ready to move if there's a minor sweetener.",
+    "Your proposal is solid — one tweak could finalize it.",
+    "I see a path forward; let's add a little more weight.",
+    "The agreement looks good; a small bonus would confirm it.",
+    "We've come far — one last sweetener could close the gap.",
+    "I like this direction — can we enrich it slightly more?",
+    "This makes sense; a small gesture would complete it.",
+    "I want to sign; give me a little more to get there.",
+    "The proposal has strength; one soft addition makes it stronger.",
+    "We're nearly aligned; a slight improvement would do it.",
+    "I feel good about this; a sweetener makes it even better.",
+    "You've done most of the work — just one more step.",
+    "I'm ready if the deal gets just a little sweeter.",
+    "It looks fine; a touch more makes it feel complete.",
+    "The offer is fair; a sweetener would tip the scales.",
+    "I think this is workable; can we smooth it just a bit?",
+    "This already appeals to me — a slight bonus finalizes it.",
+    "The plan is reasonable; maybe a little more support helps.",
+    "I'm open to it; a finishing detail would settle things.",
+    "This is a good deal; a tiny addition would make it excellent.",
+    "I can agree if we sweeten it just a touch.",
+    "We're almost done — let's add a small incentive.",
+    "The proposal is sound; one last improvement would close it nicely."
+  ],
+  
+  // Harsh Sentences (51-100): When V1 = TRUE
+  harsh: [
+    "This isn't strong enough — make it worthwhile.",
+    "The deal lacks substance; add something real.",
+    "I can't accept this unless it's made stronger.",
+    "What you've given me isn't enough.",
+    "Sweeten this or the negotiation is over.",
+    "This proposal is weak; strengthen it significantly.",
+    "I need much more value to consider this seriously.",
+    "The terms are insufficient; improve them substantially.",
+    "This doesn't meet my requirements; fix it.",
+    "Without major improvements, this won't work.",
+    "The offer is too low; bring something better.",
+    "I won't proceed unless you add significant value.",
+    "This is unacceptable in its current form.",
+    "You need to do much better than this.",
+    "The proposal lacks the strength I require.",
+    "I'm not satisfied with what's on the table.",
+    "This needs substantial enhancement to be viable.",
+    "The deal is too weak to move forward.",
+    "I require much more to make this worthwhile.",
+    "This doesn't justify my time without improvement.",
+    "The terms need significant strengthening.",
+    "I won't accept anything less than substantial improvement.",
+    "This proposal falls short of my expectations.",
+    "You'll need to add considerable value.",
+    "The offer requires major enhancement.",
+    "I need to see much more substance here.",
+    "This doesn't provide adequate value.",
+    "The deal needs fundamental strengthening.",
+    "I require substantial improvements to proceed.",
+    "This is inadequate; make it much stronger.",
+    "The proposal lacks sufficient incentive.",
+    "I need significantly more to consider this.",
+    "This doesn't offer enough value for me.",
+    "The terms require major improvement.",
+    "I won't move forward without substantial changes.",
+    "This needs dramatic enhancement.",
+    "The offer is too weak to be acceptable.",
+    "I require much more substantial terms.",
+    "This doesn't meet minimum requirements.",
+    "The proposal needs complete restructuring.",
+    "I need significantly better terms.",
+    "This is far from what I require.",
+    "The deal needs major strengthening.",
+    "I won't consider this without substantial improvement.",
+    "This lacks the value I demand.",
+    "The terms are completely inadequate.",
+    "I require dramatic improvements to proceed.",
+    "This offer is insufficient by any measure.",
+    "The proposal needs total reconstruction.",
+    "I demand much better terms than this."
+  ]
+};
+
+/**
+ * V1 Verbiage Generator for Seller Negotiation Language
+ * Generates appropriate negotiation language based on seller's bargaining position
+ * 
+ * Core V1 Formula Logic:
+ * V1 = TRUE if (BBID - SBATNA >= 25k) OR ((BBID - SBATNA) / (SBID - BBID) >= 0.5)
+ * 
+ * Rules:
+ * - If V1 = TRUE: Return "Harsh" language (sentences 51-100)
+ * - If V1 = FALSE: Return "Soft" language (sentences 1-50)
+ * 
+ * @param SBATNA - Seller's Best Alternative to Negotiated Agreement (in thousands)
+ * @param BBID - Buyer's current bid (in thousands) 
+ * @param SBID - Seller's current bid (in thousands)
+ * @param rand - Random number generator function (0-1)
+ * @returns Appropriate negotiation verbiage string
+ */
+function generateV1Verbiage(SBATNA: number, BBID: number, SBID: number, rand: () => number): string {
+  // Handle edge cases - invalid or negative values
+  if (SBATNA < 0 || BBID < 0 || SBID < 0) {
+    // Default to soft language for invalid inputs
+    const sentences = VERBIAGE_SENTENCES.soft;
+    return sentences[Math.floor(rand() * sentences.length)];
+  }
+  
+  // V1 Formula Implementation:
+  // V1 = TRUE if (BBID - SBATNA >= 25k) OR ((BBID - SBATNA) / (SBID - BBID) >= 0.5)
+  const buyerExcess = BBID - SBATNA; // How much buyer's bid exceeds seller's BATNA
+  const denominator = SBID - BBID;   // Difference between seller and buyer bids
+  
+  let v1Condition = false;
+  
+  // First condition: BBID - SBATNA >= 25k
+  // (Buyer's bid is at least $25k above seller's BATNA)
+  if (buyerExcess >= 25) {
+    v1Condition = true;
+  }
+  
+  // Second condition: (BBID - SBATNA) / (SBID - BBID) >= 0.5
+  // Handle division by zero case (when SBID equals BBID)
+  if (!v1Condition && denominator !== 0) {
+    const ratio = buyerExcess / denominator;
+    if (ratio >= 0.5) {
+      v1Condition = true;
+    }
+  }
+  
+  // Select sentence category based on V1 result
+  const sentences = v1Condition ? VERBIAGE_SENTENCES.harsh : VERBIAGE_SENTENCES.soft;
+  
+  // Randomly select from appropriate category (1-50 for soft, 51-100 for harsh)
+  return sentences[Math.floor(rand() * sentences.length)];
 }
 
 // BATNA checks are not enforced in the unified simulator; kept disabled intentionally
@@ -429,6 +595,14 @@ export class StepByStepNegotiation {
     this.state.current_round_index += 1;
     this.state.current_seller_bid = next_seller_bid;
     
+    // Generate V1 verbiage for seller
+    const verbiage = generateV1Verbiage(
+      this.state.params.seller_batna,
+      this.state.current_buyer_bid as number,
+      next_seller_bid,
+      this.state.rand
+    );
+    
     const bidRecord: BidRecord = {
       round: this.state.current_round_index,
       agent: "seller",
@@ -439,6 +613,7 @@ export class StepByStepNegotiation {
       },
       batna_constraint_check: { valid: true, reason: "not_enforced" },
       timestamp: isoNow(),
+      verbiage: verbiage,
     };
     
     this.state.rounds.push(bidRecord);
@@ -748,8 +923,8 @@ export function runSingleNegotiation(params: NegotiationParameters): SingleRunRe
     if (total_rounds % 10 === 0) {
       console.log(`Negotiation round ${total_rounds}, seller: ${current_seller_bid}, buyer: ${current_buyer_bid}`);
     }
-    const prev_seller_bid = current_seller_bid;
-    const prev_buyer_bid = current_buyer_bid;
+    const prev_seller_bid: number | null = current_seller_bid;
+    const prev_buyer_bid: number | null = current_buyer_bid;
     
     // SELLER decision on current buyer bid
     const diff1 = Math.abs((current_seller_bid as number) - (current_buyer_bid as number));
@@ -813,6 +988,15 @@ export function runSingleNegotiation(params: NegotiationParameters): SingleRunRe
     let sellerCalcLower = sellerRangeLower;
     let sellerCalcUpper = sellerRangeUpper;
     const sellerCheck = { valid: true, reason: "not_enforced" };
+    
+    // Generate V1 verbiage for seller
+    const verbiage = generateV1Verbiage(
+      params.seller_batna,
+      current_buyer_bid as number,
+      next_seller_bid,
+      rand
+    );
+    
     current_round_index += 1;
     rounds.push({
       round: current_round_index,
@@ -821,6 +1005,7 @@ export function runSingleNegotiation(params: NegotiationParameters): SingleRunRe
       calculation_range: { lower: Number(sellerCalcLower.toFixed(2)), upper: Number(sellerCalcUpper.toFixed(2)) },
       batna_constraint_check: sellerCheck,
       timestamp: isoNow(),
+      verbiage: verbiage,
     });
     current_seller_bid = next_seller_bid;
     
@@ -1116,6 +1301,7 @@ export function runMultipleSimulations(count: number): MultipleRunResult {
   for (let round = 1; round <= maxRounds; round++) {
     bidHeaders.push(`round_${round}_agent`);
     bidHeaders.push(`round_${round}_bid`);
+    bidHeaders.push(`round_${round}_verbiage`);
   }
   
   const header = [...baseHeader, ...bidHeaders];
@@ -1150,9 +1336,11 @@ export function runMultipleSimulations(count: number): MultipleRunResult {
       if (roundData) {
         bidData.push(roundData.agent);
         bidData.push(roundData.bid.toFixed(2));
+        bidData.push(roundData.verbiage || "");  // Include verbiage (empty if not present)
       } else {
         bidData.push("");  // Empty agent
         bidData.push("");  // Empty bid
+        bidData.push("");  // Empty verbiage
       }
     }
     

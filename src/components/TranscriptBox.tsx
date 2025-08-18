@@ -364,7 +364,12 @@ const TranscriptBox: React.FC<{ messages: TranscriptMessage[] }> = ({ messages }
                     transition: { duration: 0.1 }
                   }}
                 >
-                  {msg.message}
+                  {msg.message.split('\n').map((line, index) => (
+                    <div key={index}>
+                      {line}
+                      {index < msg.message.split('\n').length - 1 && <br />}
+                    </div>
+                  ))}
                 </Bubble>
               </BidContainer>
             </BubbleRow>
