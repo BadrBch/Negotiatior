@@ -975,7 +975,7 @@ function App() {
         
         // Add verbiage if present for initial seller bid
         if (r0.verbiage) {
-          initialMessage += `\n\n"${r0.verbiage}"`
+          initialMessage += `\n\n${r0.verbiage}`
         }
         
         const msgs: TranscriptMessage[] = [{
@@ -1066,7 +1066,7 @@ function App() {
           
           // Add verbiage for seller bids
           if (nextBid.agent === 'seller' && nextBid.verbiage) {
-            msg += `\n\n"${nextBid.verbiage}"`
+            msg += `\n\n${nextBid.verbiage}`
           }
           
           return [...withoutLoading, {
