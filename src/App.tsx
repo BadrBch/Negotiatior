@@ -975,7 +975,9 @@ function App() {
         
         // Add verbiage if present for initial seller bid
         if (r0.verbiage) {
-          initialMessage += `\n\n${r0.verbiage}`
+          // Remove the number prefix for display (e.g., "23: " -> "")
+          const cleanVerbiage = r0.verbiage.replace(/^\d+:\s*/, '')
+          initialMessage += `\n\n${cleanVerbiage}`
         }
         
         const msgs: TranscriptMessage[] = [{
@@ -1066,7 +1068,9 @@ function App() {
           
           // Add verbiage for seller bids
           if (nextBid.agent === 'seller' && nextBid.verbiage) {
-            msg += `\n\n${nextBid.verbiage}`
+            // Remove the number prefix for display (e.g., "23: " -> "")
+            const cleanVerbiage = nextBid.verbiage.replace(/^\d+:\s*/, '')
+            msg += `\n\n${cleanVerbiage}`
           }
           
           return [...withoutLoading, {
