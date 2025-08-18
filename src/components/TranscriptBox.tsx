@@ -124,8 +124,8 @@ const Bubble = styled(motion.div)<{ who: 'seller' | 'buyer' | 'system' }>`
   box-shadow: 
     0 4px 16px rgba(0,0,0,0.2),
     0 2px 8px rgba(0,0,0,0.1);
-  font-weight: 700;
-  font-size: 16px;
+  font-weight: 600;
+  font-size: 13px;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   
@@ -366,7 +366,11 @@ const TranscriptBox: React.FC<{ messages: TranscriptMessage[] }> = ({ messages }
                 >
                   {msg.message.split('\n').map((line, index) => (
                     <div key={index}>
-                      {line}
+                      {line.startsWith('$') && line.endsWith('K') ? (
+                        <div style={{ fontSize: '16px', fontWeight: '700', marginTop: '8px' }}>{line}</div>
+                      ) : (
+                        line
+                      )}
                       {index < msg.message.split('\n').length - 1 && <br />}
                     </div>
                   ))}

@@ -971,13 +971,15 @@ function App() {
       const currentRounds = newNegotiation.getCurrentRounds()
       if (currentRounds.length > 0) {
         const r0 = currentRounds[0]
-        let initialMessage = `$${r0.bid.toFixed(2)}K`
+        let initialMessage = ''
         
-        // Add verbiage if present for initial seller bid
+        // Add verbiage first, then bid amount for initial seller bid
         if (r0.verbiage) {
           // Remove the number prefix for display (e.g., "23: " -> "")
           const cleanVerbiage = r0.verbiage.replace(/^\d+:\s*/, '')
-          initialMessage += `\n\n${cleanVerbiage}`
+          initialMessage = `${cleanVerbiage}\n\n$${r0.bid.toFixed(2)}K`
+        } else {
+          initialMessage = `$${r0.bid.toFixed(2)}K`
         }
         
         const msgs: TranscriptMessage[] = [{
@@ -1064,13 +1066,15 @@ function App() {
           // Add new bid to transcript
           const type = nextBid.agent === 'seller' ? 'robot1' : 'robot2'
           const speaker = nextBid.agent === 'seller' ? 'Seller' : 'Buyer'
-          let msg = `$${nextBid.bid.toFixed(2)}K`
+          let msg = ''
           
-          // Add verbiage for both seller and buyer bids
+          // Add verbiage first, then bid amount (both smaller)
           if (nextBid.verbiage) {
             // Remove the number prefix for display (e.g., "23: " -> "")
             const cleanVerbiage = nextBid.verbiage.replace(/^\d+:\s*/, '')
-            msg += `\n\n${cleanVerbiage}`
+            msg = `${cleanVerbiage}\n\n$${nextBid.bid.toFixed(2)}K`
+          } else {
+            msg = `$${nextBid.bid.toFixed(2)}K`
           }
           
           return [...withoutLoading, {
