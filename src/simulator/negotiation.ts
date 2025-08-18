@@ -394,7 +394,7 @@ export class StepByStepNegotiation {
     // Ensure valid range
     if (sellerRangeUpper < sellerRangeLower) {
       console.log("Invalid seller range detected, terminating negotiation");
-      this.state.termination_reason = "invalid_range";
+      this.state.termination_reason = "no_deal";
       this.state.is_finished = true;
       return null;
     }
@@ -465,7 +465,7 @@ export class StepByStepNegotiation {
     // Ensure valid range
     if (buyerRangeUpper < buyerRangeLower) {
       console.log("Invalid buyer range detected, terminating negotiation");
-      this.state.termination_reason = "invalid_range";
+      this.state.termination_reason = "no_deal";
       this.state.is_finished = true;
       return null;
     }
@@ -781,7 +781,7 @@ export function runSingleNegotiation(params: NegotiationParameters): SingleRunRe
     // Ensure valid range
     if (sellerRangeUpper < sellerRangeLower) {
       console.log("Invalid seller range in runSingleNegotiation, terminating");
-      termination_reason = "invalid_range";
+      termination_reason = "no_deal";
       break;
     }
     
@@ -856,7 +856,7 @@ export function runSingleNegotiation(params: NegotiationParameters): SingleRunRe
     // Ensure valid range
     if (buyerRangeUpper < buyerRangeLower) {
       console.log("Invalid buyer range in runSingleNegotiation, terminating");
-      termination_reason = "invalid_range";
+      termination_reason = "no_deal";
       break;
     }
     
