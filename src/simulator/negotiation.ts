@@ -255,6 +255,172 @@ const VERBIAGE_SENTENCES = {
   ]
 };
 
+// Buyer Verbiage Generator for Buyer Negotiation Language  
+const BUYER_VERBIAGE_SENTENCES = {
+  // Soft Sentences (0-50): When Buyer V1 = FALSE
+  soft: [
+    "0: Yeah, this looks good - maybe we could meet somewhere in the middle?",
+    "1: Hey, I like where this is heading - can we find a sweet spot?",
+    "2: This seems fair! Maybe we could adjust it just a bit?",
+    "3: I'm pretty close to saying yes - could we tweak it slightly?",
+    "4: Everything's looking reasonable! Just wondering if we can fine-tune it?",
+    "5: This is a solid offer - maybe we could nudge it a little?",
+    "6: I'm actually pretty interested - one small adjustment would seal it.",
+    "7: I like this direction - think we could massage it a bit more?",
+    "8: This works for me mostly - a tiny change would get me there.",
+    "9: I see good value here - could we find a middle ground?",
+    "10: The framework's good - just a small shift would be perfect.",
+    "11: This is really close - one gentle adjustment would close it for me.",
+    "12: I think we're on the same page - can we fine-tune the details?",
+    "13: I appreciate this offer - maybe we can meet halfway?",
+    "14: You've done well here - perhaps we could split the difference?",
+    "15: I'm comfortable with this direction, but could we adjust slightly?",
+    "16: This feels pretty good - could we dial it in a bit more?",
+    "17: The numbers seem reasonable - maybe we could compromise?",
+    "18: I'm leaning toward yes - could we find a middle point?",
+    "19: The deal looks solid - a small adjustment would be perfect.",
+    "20: This is a good starting point - could we meet in between?",
+    "21: I'm feeling positive about this - maybe we could split it?",
+    "22: The structure works - could we adjust the details?",
+    "23: This is promising - could we find a compromise?",
+    "24: It's a fair approach - perhaps we can meet halfway?",
+    "25: We're close - can we find that sweet spot?",
+    "26: This works mostly - maybe a small compromise?",
+    "27: I'd be ready to agree if we could meet in the middle.",
+    "28: Your offer's reasonable - one adjustment could finalize it.",
+    "29: I see potential here - let's find that middle ground.",
+    "30: The deal looks good - a small compromise would confirm it.",
+    "31: We've made progress - one last adjustment could close this.",
+    "32: I like this approach - can we meet somewhere in between?",
+    "33: This makes sense - a small compromise would complete it.",
+    "34: I'm ready to move - just need us to meet halfway.",
+    "35: The offer's strong - one small adjustment would help.",
+    "36: We're almost there - a slight compromise would do it.",
+    "37: I feel good about this - meeting halfway would be perfect.",
+    "38: You've made a fair offer - just need a small adjustment.",
+    "39: I'm ready if we can find that middle point.",
+    "40: It looks reasonable - a compromise would feel right.",
+    "41: The offer's fair - meeting halfway would work for me.",
+    "42: This is workable - can we find a middle ground?",
+    "43: This appeals to me - a small compromise would finalize it.",
+    "44: The approach is good - maybe we could split the difference?",
+    "45: I'm open to this - finding middle ground would settle it.",
+    "46: This is a solid deal - a small compromise would be excellent.",
+    "47: I can work with this if we meet somewhere in the middle.",
+    "48: We're almost there - let's find that compromise point.",
+    "49: The offer's sound - one small adjustment would close it.",
+    "50: I'm interested - just need us to find that sweet spot."
+  ],
+  
+  // Harsh Sentences (51-100): When Buyer V1 = TRUE
+  harsh: [
+    "51: Look, this is way too high - you gotta come down significantly.",
+    "52: I'll be honest, this price is pretty steep - bring it down.",
+    "53: I can't work with this - it needs to be much lower.",
+    "54: What you're asking is just too much.",
+    "55: You need to drop this price big time or we're done.",
+    "56: This feels too expensive - you'll need to come down considerably.",
+    "57: I need to see way better pricing before I take this seriously.",
+    "58: This price isn't realistic - it needs major reduction.",
+    "59: This doesn't fit my budget - you gotta lower it.",
+    "60: Without a major price drop, this won't work for me.",
+    "61: The price is way too high - bring me something reasonable.",
+    "62: I won't move unless you drop the price significantly.",
+    "63: This is totally out of my range as is.",
+    "64: You're gonna need to come down way more than this.",
+    "65: This price is beyond what I can justify.",
+    "66: I'm not comfortable with this pricing level.",
+    "67: This needs major price reduction before it works.",
+    "68: The price is too high for me to move forward.",
+    "69: I need way better pricing to make this worthwhile.",
+    "70: This doesn't fit my budget without serious price cuts.",
+    "71: The pricing needs serious reduction across the board.",
+    "72: I won't accept anything less than major price reduction.",
+    "73: This price falls well above what I can do.",
+    "74: You'll need to drop the price seriously to get my attention.",
+    "75: The price needs major reduction before I'll consider it.",
+    "76: I need to see way better pricing in this deal.",
+    "77: This doesn't provide good value at this price point.",
+    "78: The pricing needs fundamental adjustment from the ground up.",
+    "79: I need major price reductions before we can proceed.",
+    "80: This is overpriced - you need to make it way more affordable.",
+    "81: The price lacks what I need to say yes.",
+    "82: I need way better pricing to even consider this.",
+    "83: This doesn't offer good value for someone in my position.",
+    "84: The price needs major improvement before I'll agree.",
+    "85: I won't move forward without substantial price cuts.",
+    "86: This needs dramatic price reduction to get my interest.",
+    "87: The price is too high to be acceptable.",
+    "88: I need way better pricing than what you're proposing.",
+    "89: This doesn't meet even my basic budget requirements.",
+    "90: The pricing needs complete restructuring before I'll look at it.",
+    "91: I need way better pricing than what you're showing me.",
+    "92: This is far from the price range I need to make a deal.",
+    "93: The price needs major reduction in every area.",
+    "94: I won't consider this without major price cuts across the board.",
+    "95: This lacks the value I need at this price point.",
+    "96: The pricing is totally out of line for what I'm looking for.",
+    "97: I need dramatic price reductions before we can proceed.",
+    "98: This price is unreasonable by any measure.",
+    "99: The pricing needs total reconstruction before I'll engage.",
+    "100: I need way better pricing than what you're presenting."
+  ]
+};
+
+/**
+ * Buyer Verbiage Generator for Buyer Negotiation Language
+ * Generates appropriate negotiation language based on buyer's bargaining position
+ * 
+ * Core Buyer Formula Logic:
+ * Buyer V1 = TRUE if (SBID - BBATNA >= 25k) OR ((SBID - BBATNA) / (BBID - SBID) >= 0.5)
+ * 
+ * Rules:
+ * - If Buyer V1 = TRUE: Return "Harsh" language (sentences 51-100) 
+ * - If Buyer V1 = FALSE: Return "Soft" language (sentences 0-50)
+ * 
+ * @param BBATNA - Buyer's Best Alternative to Negotiated Agreement (in thousands)
+ * @param SBID - Seller's current bid (in thousands)
+ * @param BBID - Buyer's current bid (in thousands) 
+ * @param rand - Random number generator function (0-1)
+ * @returns Appropriate negotiation verbiage string
+ */
+function generateBuyerVerbiage(BBATNA: number, SBID: number, BBID: number, rand: () => number): string {
+  // Handle edge cases - invalid or negative values
+  if (BBATNA < 0 || SBID < 0 || BBID < 0) {
+    // Default to soft language for invalid inputs
+    const sentences = BUYER_VERBIAGE_SENTENCES.soft;
+    return sentences[Math.floor(rand() * sentences.length)];
+  }
+  
+  // Buyer V1 Formula Implementation:
+  // Buyer V1 = TRUE if (SBID - BBATNA >= 25k) OR ((SBID - BBATNA) / (BBID - SBID) >= 0.5)
+  const sellerExcess = SBID - BBATNA; // How much seller's bid exceeds buyer's BATNA
+  const denominator = BBID - SBID;   // Difference between buyer and seller bids
+  
+  let buyerV1Condition = false;
+  
+  // First condition: SBID - BBATNA >= 25k
+  // (Seller's bid is at least $25k above buyer's BATNA)
+  if (sellerExcess >= 25) {
+    buyerV1Condition = true;
+  }
+  
+  // Second condition: (SBID - BBATNA) / (BBID - SBID) >= 0.5
+  // Handle division by zero case (when BBID equals SBID)
+  if (!buyerV1Condition && denominator !== 0) {
+    const ratio = sellerExcess / denominator;
+    if (ratio >= 0.5) {
+      buyerV1Condition = true;
+    }
+  }
+  
+  // Select sentence category based on Buyer V1 result
+  const sentences = buyerV1Condition ? BUYER_VERBIAGE_SENTENCES.harsh : BUYER_VERBIAGE_SENTENCES.soft;
+  
+  // Randomly select from appropriate category (0-50 for soft, 51-100 for harsh)
+  return sentences[Math.floor(rand() * sentences.length)];
+}
+
 /**
  * V1 Verbiage Generator for Seller Negotiation Language
  * Generates appropriate negotiation language based on seller's bargaining position
@@ -487,6 +653,14 @@ export class StepByStepNegotiation {
     this.state.current_round_index += 1;
     this.state.current_buyer_bid = first_buyer_bid;
     
+    // Generate buyer verbiage for initial bid
+    const initialBuyerVerbiage = generateBuyerVerbiage(
+      this.state.params.buyer_batna,
+      this.state.current_seller_bid as number,
+      first_buyer_bid,
+      this.state.rand
+    );
+    
     const bidRecord: BidRecord = {
       round: this.state.current_round_index,
       agent: "buyer",
@@ -497,6 +671,7 @@ export class StepByStepNegotiation {
       },
       batna_constraint_check: { valid: true, reason: "not_enforced" },
       timestamp: isoNow(),
+      verbiage: initialBuyerVerbiage,
     };
     
     this.state.rounds.push(bidRecord);
@@ -675,6 +850,14 @@ export class StepByStepNegotiation {
     this.state.current_round_index += 1;
     this.state.current_buyer_bid = next_buyer_bid;
     
+    // Generate buyer verbiage
+    const buyerVerbiage = generateBuyerVerbiage(
+      this.state.params.buyer_batna,
+      this.state.current_seller_bid as number,
+      next_buyer_bid,
+      this.state.rand
+    );
+    
     const bidRecord: BidRecord = {
       round: this.state.current_round_index,
       agent: "buyer",
@@ -685,6 +868,7 @@ export class StepByStepNegotiation {
       },
       batna_constraint_check: { valid: true, reason: "not_enforced" },
       timestamp: isoNow(),
+      verbiage: buyerVerbiage,
     };
     
     this.state.rounds.push(bidRecord);
@@ -897,6 +1081,15 @@ export function runSingleNegotiation(params: NegotiationParameters): SingleRunRe
     first_buyer_bid = uniform(rand, buyerRangeLower, effectiveBuyerUpper);
   }
   first_buyer_bid = roundToHalf(first_buyer_bid);
+  
+  // Generate buyer verbiage for initial bid
+  const initialBuyerVerbiage = generateBuyerVerbiage(
+    params.buyer_batna,
+    current_seller_bid,
+    first_buyer_bid,
+    rand
+  );
+  
   current_round_index += 1;
   const firstCheck = { valid: true, reason: "not_enforced" };
   rounds.push({
@@ -909,6 +1102,7 @@ export function runSingleNegotiation(params: NegotiationParameters): SingleRunRe
     },
     batna_constraint_check: firstCheck,
     timestamp: isoNow(),
+    verbiage: initialBuyerVerbiage,
   });
   current_buyer_bid = first_buyer_bid;
 
@@ -1074,6 +1268,15 @@ export function runSingleNegotiation(params: NegotiationParameters): SingleRunRe
     let buyerCalcLower = buyerRangeLower;
     let buyerCalcUpper = buyerRangeUpper;
     const buyerCheck2 = { valid: true, reason: "not_enforced" };
+    
+    // Generate buyer verbiage for counter-offer
+    const buyerVerbiage = generateBuyerVerbiage(
+      params.buyer_batna,
+      current_seller_bid as number,
+      next_buyer_bid,
+      rand
+    );
+    
     current_round_index += 1;
     rounds.push({
       round: current_round_index,
@@ -1082,6 +1285,7 @@ export function runSingleNegotiation(params: NegotiationParameters): SingleRunRe
       calculation_range: { lower: Number(buyerCalcLower.toFixed(2)), upper: Number(buyerCalcUpper.toFixed(2)) },
       batna_constraint_check: buyerCheck2,
       timestamp: isoNow(),
+      verbiage: buyerVerbiage,
     });
     current_buyer_bid = next_buyer_bid;
     

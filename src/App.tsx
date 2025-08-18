@@ -1066,8 +1066,8 @@ function App() {
           const speaker = nextBid.agent === 'seller' ? 'Seller' : 'Buyer'
           let msg = `$${nextBid.bid.toFixed(2)}K`
           
-          // Add verbiage for seller bids
-          if (nextBid.agent === 'seller' && nextBid.verbiage) {
+          // Add verbiage for both seller and buyer bids
+          if (nextBid.verbiage) {
             // Remove the number prefix for display (e.g., "23: " -> "")
             const cleanVerbiage = nextBid.verbiage.replace(/^\d+:\s*/, '')
             msg += `\n\n${cleanVerbiage}`
