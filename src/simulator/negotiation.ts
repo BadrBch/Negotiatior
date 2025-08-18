@@ -27,7 +27,7 @@ export interface BidRecord {
   calculation_range: { lower: number; upper: number };
   batna_constraint_check: { valid: boolean; reason: string };
   timestamp: string;
-  verbiage?: string; // Seller negotiation language (V1 generator)
+  verbiage?: string; // Negotiation language (V1/V2 for seller, V1 for buyer)
 }
 
 export interface PostNegotiationAnalysis {
@@ -366,6 +366,171 @@ const BUYER_VERBIAGE_SENTENCES = {
     "100: I need way better pricing than what you're presenting."
   ]
 };
+
+// V2 Verbiage Generator for Seller Acceptance-Seeking Language
+const SELLER_V2_VERBIAGE_SENTENCES = {
+  // Soft Sentences (1-50): When V2 = FALSE
+  soft: [
+    "1: Is this offer good for you?",
+    "2: Does this deal work for you?",
+    "3: Would this offer be fine with you?",
+    "4: Do you think this deal makes sense?",
+    "5: Is this proposal okay for you?",
+    "6: Would this option fit your needs?",
+    "7: Does this arrangement sound good?",
+    "8: Is this deal acceptable to you?",
+    "9: Would you be comfortable with this offer?",
+    "10: Does this proposal suit you?",
+    "11: Is this offer fair in your view?",
+    "12: Would this deal satisfy you?",
+    "13: Do you find this proposal reasonable?",
+    "14: Does this offer sound right?",
+    "15: Is this arrangement good for you?",
+    "16: Would you be okay with this deal?",
+    "17: Do you see this proposal working for you?",
+    "18: Is this offer fine as it stands?",
+    "19: Does this deal match what you want?",
+    "20: Would you go with this option?",
+    "21: Is this proposal something you'd accept?",
+    "22: Would this arrangement be suitable?",
+    "23: Do you think this offer is fair?",
+    "24: Is this option good enough for you?",
+    "25: Would you say yes to this deal?",
+    "26: Does this proposal meet your needs?",
+    "27: Is this offer agreeable to you?",
+    "28: Would this deal work on your end?",
+    "29: Do you feel good about this offer?",
+    "30: Is this proposal what you had in mind?",
+    "31: Would this option satisfy your concerns?",
+    "32: Does this deal sound fair to you?",
+    "33: Is this offer something you can go with?",
+    "34: Would this arrangement be okay?",
+    "35: Do you think this proposal is solid?",
+    "36: Is this option acceptable to you?",
+    "37: Would this offer solve it for you?",
+    "38: Does this proposal seem good enough?",
+    "39: Is this deal fine by you?",
+    "40: Would you agree with this offer?",
+    "41: Do you consider this proposal good?",
+    "42: Is this arrangement all right for you?",
+    "43: Would this offer be a good fit?",
+    "44: Does this deal cover what you need?",
+    "45: Is this proposal fair in your eyes?",
+    "46: Would you find this option good?",
+    "47: Does this arrangement make sense for you?",
+    "48: Is this deal the right one for you?",
+    "49: Would this offer close it for you?",
+    "50: Does this proposal work from your perspective?"
+  ],
+  
+  // Harsh Sentences (51-100): When V2 = TRUE
+  harsh: [
+    "51: Isn't it clear you should just take my deal?",
+    "52: What's stopping you from accepting my deal?",
+    "53: Do you really think you'll get better than this deal?",
+    "54: Are you going to waste time or take my deal?",
+    "55: Isn't my deal the only real option here?",
+    "56: Do you want to drag this out instead of taking my deal?",
+    "57: Are you seriously rejecting my deal?",
+    "58: Do you think refusing my deal will help you?",
+    "59: Isn't it obvious this is the deal to take?",
+    "60: Do you plan to keep stalling or accept my deal?",
+    "61: Can you even find a better deal than mine?",
+    "62: Do you think saying no will end well for you?",
+    "63: Are you ready to lose everything by refusing my deal?",
+    "64: Do you want this or not? Take the deal.",
+    "65: Isn't this your last chance to accept my deal?",
+    "66: Do you really want to walk away from this deal?",
+    "67: Are you blind to how fair my deal is?",
+    "68: Do you want to mess this up by rejecting my deal?",
+    "69: Are you making a mistake refusing this offer?",
+    "70: Isn't my deal the smartest choice you have?",
+    "71: Do you think dragging this further makes sense?",
+    "72: Are you willing to risk losing everything over this deal?",
+    "73: Isn't my deal already more than fair?",
+    "74: Do you want to keep arguing instead of closing?",
+    "75: Can you honestly say no to this deal?",
+    "76: Do you think anyone else would give you better?",
+    "77: Are you trying to throw away this opportunity?",
+    "78: Isn't my deal the only way forward?",
+    "79: Do you want to gamble instead of taking certainty?",
+    "80: Are you ready to face the loss if you refuse?",
+    "81: Isn't this deal already generous?",
+    "82: Do you want to keep playing games or accept?",
+    "83: Do you think rejecting me will work out for you?",
+    "84: Are you seriously doubting this deal?",
+    "85: Isn't my deal the only realistic choice?",
+    "86: Do you want to ruin this chance?",
+    "87: Are you wasting my time by hesitating?",
+    "88: Isn't it better to accept than to drag on?",
+    "89: Do you think delay will change my offer?",
+    "90: Are you really going to walk away empty-handed?",
+    "91: Isn't my deal already your best option?",
+    "92: Do you want to lose this once it's gone?",
+    "93: Can you deny this is the deal you need?",
+    "94: Are you choosing pride over progress by refusing?",
+    "95: Isn't this deal more than enough for you?",
+    "96: Do you plan to keep fighting instead of accepting?",
+    "97: Do you see any way out other than my deal?",
+    "98: Are you foolish enough to reject this?",
+    "99: Isn't this the point where you just take my deal?",
+    "100: Do you want to keep pushing and lose everything?"
+  ]
+};
+
+/**
+ * V2 Verbiage Generator for Seller Acceptance-Seeking Language
+ * Generates acceptance-seeking language based on seller's position relative to their BATNA
+ * 
+ * Core V2 Formula Logic:
+ * V2 = TRUE if (SBID - SBATNA < 10k) OR ((SBID - SBATNA) / (SBID - BBID) <= 0.1)
+ * 
+ * Rules:
+ * - If V2 = TRUE: Return "Harsh" acceptance-seeking language (sentences 51-100)
+ * - If V2 = FALSE: Return "Soft" acceptance-seeking language (sentences 1-50)
+ * 
+ * @param SBATNA - Seller's Best Alternative to Negotiated Agreement (in thousands)
+ * @param BBID - Buyer's current bid (in thousands)
+ * @param SBID - Seller's current bid (in thousands)
+ * @param rand - Random number generator function (0-1)
+ * @returns Appropriate acceptance-seeking verbiage string
+ */
+function generateV2Verbiage(SBATNA: number, BBID: number, SBID: number, rand: () => number): string {
+  // Handle edge cases - invalid or negative values
+  if (SBATNA < 0 || BBID < 0 || SBID < 0) {
+    // Default to soft language for invalid inputs
+    const sentences = SELLER_V2_VERBIAGE_SENTENCES.soft;
+    return sentences[Math.floor(rand() * sentences.length)];
+  }
+  
+  // V2 Formula Implementation:
+  // V2 = TRUE if (SBID - SBATNA < 10k) OR ((SBID - SBATNA) / (SBID - BBID) <= 0.1)
+  const sellerMargin = SBID - SBATNA; // How much above seller's BATNA the bid is
+  const denominator = SBID - BBID;   // Difference between seller and buyer bids
+  
+  let v2Condition = false;
+  
+  // First condition: SBID - SBATNA < 10k
+  // (Seller's bid is less than $10k above their BATNA - tight margin)
+  if (sellerMargin < 10) {
+    v2Condition = true;
+  }
+  
+  // Second condition: (SBID - SBATNA) / (SBID - BBID) <= 0.1 (10%)
+  // Handle division by zero case (when SBID equals BBID)
+  if (!v2Condition && denominator !== 0) {
+    const ratio = sellerMargin / denominator;
+    if (ratio <= 0.1) {
+      v2Condition = true;
+    }
+  }
+  
+  // Select sentence category based on V2 result
+  const sentences = v2Condition ? SELLER_V2_VERBIAGE_SENTENCES.harsh : SELLER_V2_VERBIAGE_SENTENCES.soft;
+  
+  // Randomly select from appropriate category (1-50 for soft, 51-100 for harsh)
+  return sentences[Math.floor(rand() * sentences.length)];
+}
 
 /**
  * Buyer Verbiage Generator for Buyer Negotiation Language
@@ -771,8 +936,8 @@ export class StepByStepNegotiation {
     this.state.current_round_index += 1;
     this.state.current_seller_bid = next_seller_bid;
     
-    // Generate V1 verbiage for seller
-    const verbiage = generateV1Verbiage(
+    // Generate V2 verbiage for seller (acceptance-seeking)
+    const verbiage = generateV2Verbiage(
       this.state.params.seller_batna,
       this.state.current_buyer_bid as number,
       next_seller_bid,
@@ -1184,8 +1349,8 @@ export function runSingleNegotiation(params: NegotiationParameters): SingleRunRe
     let sellerCalcUpper = sellerRangeUpper;
     const sellerCheck = { valid: true, reason: "not_enforced" };
     
-    // Generate V1 verbiage for seller
-    const verbiage = generateV1Verbiage(
+    // Generate V2 verbiage for seller (acceptance-seeking)
+    const verbiage = generateV2Verbiage(
       params.seller_batna,
       current_buyer_bid as number,
       next_seller_bid,
