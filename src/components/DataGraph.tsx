@@ -137,8 +137,15 @@ const DataGraph: React.FC<DataGraphProps> = ({
     }
     
     let xMin = 0, xMax = 12, yMin = 0, yMax = 1000;
-    
-    // Simpler dynamic scaling
+
+    // Center X domain around current month-to-key (M) from latest bid
+    if (bidData.length > 0) {
+      const currentM = bidData[bidData.length - 1].month;
+      xMin = Math.max(0, currentM - 4);
+      xMax = Math.min(12, currentM + 4);
+    }
+
+    // Simpler dynamic scaling for Y
     if (allValues.length > 0) {
       const dataMin = Math.min(...allValues);
       const dataMax = Math.max(...allValues);
