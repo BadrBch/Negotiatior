@@ -1285,11 +1285,11 @@ function App() {
             </SliderContainer>
             
             <SliderContainer>
-              <SliderLabel>Month-to-Key: 0 - 12 months</SliderLabel>
+              <SliderLabel>Month-to-Key: 0 - 16 months</SliderLabel>
               <Slider
                 type="range"
                 min="0"
-                max="12"
+                max="16"
                 step="1"
                 value={monthToKey}
                 onChange={(e) => setMonthToKey(parseInt(e.target.value))}
@@ -1345,7 +1345,7 @@ function App() {
               </ModalButton>
               <RandomButton onClick={() => {
                 setNegotiationPrice(Math.floor(Math.random() * (1000 - 250 + 1)) + 250)
-                setMonthToKey(Math.floor(Math.random() * 13)) // 0-12 inclusive
+                setMonthToKey(Math.floor(Math.random() * 17)) // 0-16 inclusive
                 const buyerProfiles: BuyerProfile[] = ['bulldozer', 'diplomat', 'chameleon']
                 const sellerProfiles: SellerProfile[] = ['bulldozer', 'diplomat', 'chameleon']
                 setSelectedBuyerProfile(buyerProfiles[Math.floor(Math.random() * buyerProfiles.length)])

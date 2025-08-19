@@ -136,13 +136,13 @@ const DataGraph: React.FC<DataGraphProps> = ({
       allValues.push(...allBatnaPoints.map(point => point!.price));
     }
     
-    let xMin = 0, xMax = 12, yMin = 0, yMax = 1000;
+    let xMin = 0, xMax = 16, yMin = 0, yMax = 1000;
 
     // Center X domain around current month-to-key (M) from latest bid
     if (bidData.length > 0) {
       const currentM = bidData[bidData.length - 1].month;
       xMin = Math.max(0, currentM - 4);
-      xMax = Math.min(12, currentM + 4);
+      xMax = Math.min(16, currentM + 4);
     }
 
     // Simpler dynamic scaling for Y
@@ -185,10 +185,10 @@ const DataGraph: React.FC<DataGraphProps> = ({
       .attr('opacity', 0.8)
 
     // Add enhanced grid lines for month boundaries
-    // Vertical grid lines (X-axis: months 0-12) with enhanced styling
+    // Vertical grid lines (X-axis) with enhanced styling
     const xStep = 1; // Show grid line for each month
     for (let i = xMin; i <= xMax; i += xStep) {
-      const isKeyMonth = i === 0 || i === 6 || i === 12
+      const isKeyMonth = i === 0 || i === 8 || i === 16
       chart.append('line')
         .attr('x1', xScale(i))
         .attr('y1', 0)

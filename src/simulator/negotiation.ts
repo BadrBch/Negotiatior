@@ -861,7 +861,7 @@ export class StepByStepNegotiation {
       current_buyer_bid: null,
       previous_seller_bid: null,
       previous_buyer_bid: null,
-      current_month: 12, // Initialize month-to-key at 12 (starting position)
+      current_month: Math.max(0, Math.min(16, params.month_to_key ?? 12)), // Initialize month-to-key from params (clamped 0-16)
       current_round_index: 1,
       termination_reason: null,
       final_price: null,
@@ -1430,7 +1430,7 @@ export function runSingleNegotiation(params: NegotiationParameters): SingleRunRe
   
   // Month-to-key tracking variables
   let previous_seller_bid: number | null = null;
-  let current_month: number = 12; // Initialize month-to-key at 12
+  let current_month: number = Math.max(0, Math.min(16, params.month_to_key ?? 12)); // Initialize month-to-key from params
   
   // Helper function to update month-to-key value based on seller rule
   const updateMonthToKey = (next_seller_bid: number) => {
