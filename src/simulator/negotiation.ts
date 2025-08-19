@@ -367,114 +367,227 @@ const BUYER_VERBIAGE_SENTENCES = {
   ]
 };
 
-// V2 Verbiage Generator for Seller Acceptance-Seeking Language
-const SELLER_V2_VERBIAGE_SENTENCES = {
-  // Soft Sentences (1-50): When V2 = FALSE
+// Buyer V2 Verbiage Generator for Buyer Acceptance-Seeking Language  
+const BUYER_V2_VERBIAGE_SENTENCES = {
+  // Soft Sentences (200-250): When Buyer V2 = FALSE
   soft: [
-    "1: Is this offer good for you?",
-    "2: Does this deal work for you?",
-    "3: Would this offer be fine with you?",
-    "4: Do you think this deal makes sense?",
-    "5: Is this proposal okay for you?",
-    "6: Would this option fit your needs?",
-    "7: Does this arrangement sound good?",
-    "8: Is this deal acceptable to you?",
-    "9: Would you be comfortable with this offer?",
-    "10: Does this proposal suit you?",
-    "11: Is this offer fair in your view?",
-    "12: Would this deal satisfy you?",
-    "13: Do you find this proposal reasonable?",
-    "14: Does this offer sound right?",
-    "15: Is this arrangement good for you?",
-    "16: Would you be okay with this deal?",
-    "17: Do you see this proposal working for you?",
-    "18: Is this offer fine as it stands?",
-    "19: Does this deal match what you want?",
-    "20: Would you go with this option?",
-    "21: Is this proposal something you'd accept?",
-    "22: Would this arrangement be suitable?",
-    "23: Do you think this offer is fair?",
-    "24: Is this option good enough for you?",
-    "25: Would you say yes to this deal?",
-    "26: Does this proposal meet your needs?",
-    "27: Is this offer agreeable to you?",
-    "28: Would this deal work on your end?",
-    "29: Do you feel good about this offer?",
-    "30: Is this proposal what you had in mind?",
-    "31: Would this option satisfy your concerns?",
-    "32: Does this deal sound fair to you?",
-    "33: Is this offer something you can go with?",
-    "34: Would this arrangement be okay?",
-    "35: Do you think this proposal is solid?",
-    "36: Is this option acceptable to you?",
-    "37: Would this offer solve it for you?",
-    "38: Does this proposal seem good enough?",
-    "39: Is this deal fine by you?",
-    "40: Would you agree with this offer?",
-    "41: Do you consider this proposal good?",
-    "42: Is this arrangement all right for you?",
-    "43: Would this offer be a good fit?",
-    "44: Does this deal cover what you need?",
-    "45: Is this proposal fair in your eyes?",
-    "46: Would you find this option good?",
-    "47: Does this arrangement make sense for you?",
-    "48: Is this deal the right one for you?",
-    "49: Would this offer close it for you?",
-    "50: Does this proposal work from your perspective?"
+    "200: Would this price work for you?",
+    "201: Is this pricing acceptable?",
+    "202: Does this amount seem fair to you?",
+    "203: Would you be okay with this price?",
+    "204: Is this cost reasonable for you?",
+    "205: Does this pricing make sense?",
+    "206: Would this amount be agreeable?",
+    "207: Is this price point workable for you?",
+    "208: Does this cost fit your expectations?",
+    "209: Would you accept this pricing?",
+    "210: Is this amount suitable for you?",
+    "211: Does this price seem right?",
+    "212: Would this cost be acceptable?",
+    "213: Is this pricing fair in your view?",
+    "214: Does this amount work for you?",
+    "215: Would you go with this price?",
+    "216: Is this cost something you'd accept?",
+    "217: Does this pricing sound good?",
+    "218: Would this amount be fine?",
+    "219: Is this price reasonable to you?",
+    "220: Does this cost meet your needs?",
+    "221: Would you agree to this pricing?",
+    "222: Is this amount good for you?",
+    "223: Does this price work from your end?",
+    "224: Would this cost be suitable?",
+    "225: Is this pricing what you expected?",
+    "226: Does this amount seem fair?",
+    "227: Would you be comfortable with this price?",
+    "228: Is this cost acceptable to you?",
+    "229: Does this pricing look right?",
+    "230: Would this amount satisfy you?",
+    "231: Is this price good enough?",
+    "232: Does this cost work for your needs?",
+    "233: Would you find this pricing fair?",
+    "234: Is this amount reasonable?",
+    "235: Does this price fit your budget?",
+    "236: Would this cost be appropriate?",
+    "237: Is this pricing agreeable to you?",
+    "238: Does this amount sound fair?",
+    "239: Would you accept this price point?",
+    "240: Is this cost within your range?",
+    "241: Does this pricing work for you?",
+    "242: Would this amount be okay?",
+    "243: Is this price fair to you?",
+    "244: Does this cost seem right?",
+    "245: Would you go for this pricing?",
+    "246: Is this amount acceptable?",
+    "247: Does this price meet your standards?",
+    "248: Would this cost work out?",
+    "249: Is this pricing suitable for you?",
+    "250: Does this amount close it for you?"
   ],
   
-  // Harsh Sentences (51-100): When V2 = TRUE
+  // Harsh Sentences (251-300): When Buyer V2 = TRUE
   harsh: [
-    "51: Isn't it clear you should just take my deal?",
-    "52: What's stopping you from accepting my deal?",
-    "53: Do you really think you'll get better than this deal?",
-    "54: Are you going to waste time or take my deal?",
-    "55: Isn't my deal the only real option here?",
-    "56: Do you want to drag this out instead of taking my deal?",
-    "57: Are you seriously rejecting my deal?",
-    "58: Do you think refusing my deal will help you?",
-    "59: Isn't it obvious this is the deal to take?",
-    "60: Do you plan to keep stalling or accept my deal?",
-    "61: Can you even find a better deal than mine?",
-    "62: Do you think saying no will end well for you?",
-    "63: Are you ready to lose everything by refusing my deal?",
-    "64: Do you want this or not? Take the deal.",
-    "65: Isn't this your last chance to accept my deal?",
-    "66: Do you really want to walk away from this deal?",
-    "67: Are you blind to how fair my deal is?",
-    "68: Do you want to mess this up by rejecting my deal?",
-    "69: Are you making a mistake refusing this offer?",
-    "70: Isn't my deal the smartest choice you have?",
-    "71: Do you think dragging this further makes sense?",
-    "72: Are you willing to risk losing everything over this deal?",
-    "73: Isn't my deal already more than fair?",
-    "74: Do you want to keep arguing instead of closing?",
-    "75: Can you honestly say no to this deal?",
-    "76: Do you think anyone else would give you better?",
-    "77: Are you trying to throw away this opportunity?",
-    "78: Isn't my deal the only way forward?",
-    "79: Do you want to gamble instead of taking certainty?",
-    "80: Are you ready to face the loss if you refuse?",
-    "81: Isn't this deal already generous?",
-    "82: Do you want to keep playing games or accept?",
-    "83: Do you think rejecting me will work out for you?",
-    "84: Are you seriously doubting this deal?",
-    "85: Isn't my deal the only realistic choice?",
-    "86: Do you want to ruin this chance?",
-    "87: Are you wasting my time by hesitating?",
-    "88: Isn't it better to accept than to drag on?",
-    "89: Do you think delay will change my offer?",
-    "90: Are you really going to walk away empty-handed?",
-    "91: Isn't my deal already your best option?",
-    "92: Do you want to lose this once it's gone?",
-    "93: Can you deny this is the deal you need?",
-    "94: Are you choosing pride over progress by refusing?",
-    "95: Isn't this deal more than enough for you?",
-    "96: Do you plan to keep fighting instead of accepting?",
-    "97: Do you see any way out other than my deal?",
-    "98: Are you foolish enough to reject this?",
-    "99: Isn't this the point where you just take my deal?",
-    "100: Do you want to keep pushing and lose everything?"
+    "251: You need to take this price now or lose the deal.",
+    "252: This is my final offer - accept it or we're done.",
+    "253: I won't go higher than this - take it or leave it.",
+    "254: This price is non-negotiable - yes or no?",
+    "255: Accept this offer or I'm walking away.",
+    "256: This is as good as it gets - what's it going to be?",
+    "257: I'm not budging on this price - decide now.",
+    "258: Take this deal or watch it disappear.",
+    "259: This is your last chance at this price.",
+    "260: Accept now or lose this opportunity forever.",
+    "261: I won't offer this price again - decide.",
+    "262: This deal expires if you don't take it now.",
+    "263: Stop wasting time - accept this price.",
+    "264: This is my bottom line - take it or not.",
+    "265: You'll regret passing on this price.",
+    "266: This offer won't be available tomorrow.",
+    "267: Accept this price or find someone else.",
+    "268: I'm done negotiating - this is the price.",
+    "269: Take this deal before I change my mind.",
+    "270: This price is firm - no more discussion.",
+    "271: Accept this or lose the deal entirely.",
+    "272: This is it - yes or no to this price?",
+    "273: You won't get this price anywhere else.",
+    "274: Take this offer or we're finished here.",
+    "275: This price stands - accept or walk away.",
+    "276: I'm not moving from this price - decide.",
+    "277: This is your final opportunity at this price.",
+    "278: Accept this deal or it's over.",
+    "279: This price is as low as I go - period.",
+    "280: Take this offer or lose it completely.",
+    "281: This is my last and best price.",
+    "282: Accept this or I'm done dealing with you.",
+    "283: This price won't last - decide quickly.",
+    "284: Take this deal or forget about it.",
+    "285: This is the end of negotiations - accept or not.",
+    "286: You're crazy not to take this price.",
+    "287: This offer disappears if you say no.",
+    "288: Accept this price or we're through.",
+    "289: This is my final position - take it.",
+    "290: You'll never see this price again - decide.",
+    "291: Accept this or miss out completely.",
+    "292: This price is set in stone - yes or no?",
+    "293: Take this deal or lose everything.",
+    "294: This is it - no more chances at this price.",
+    "295: Accept this offer or it's gone forever.",
+    "296: This price is final - what's your answer?",
+    "297: Take this deal or watch it vanish.",
+    "298: This is your moment - accept or lose out.",
+    "299: This price ends today - decide now.",
+    "300: Accept this or never get another chance."
+  ]
+};
+
+// V2 Verbiage Generator for Seller Acceptance-Seeking Language
+const SELLER_V2_VERBIAGE_SENTENCES = {
+  // Soft Sentences (100-150): When V2 = FALSE
+  soft: [
+    "100: Is this offer good for you?",
+    "101: Does this deal work for you?",
+    "102: Would this offer be fine with you?",
+    "103: Do you think this deal makes sense?",
+    "104: Is this proposal okay for you?",
+    "105: Would this option fit your needs?",
+    "106: Does this arrangement sound good?",
+    "107: Is this deal acceptable to you?",
+    "108: Would you be comfortable with this offer?",
+    "109: Does this proposal suit you?",
+    "110: Is this offer fair in your view?",
+    "111: Would this deal satisfy you?",
+    "112: Do you find this proposal reasonable?",
+    "113: Does this offer sound right?",
+    "114: Is this arrangement good for you?",
+    "115: Would you be okay with this deal?",
+    "116: Do you see this proposal working for you?",
+    "117: Is this offer fine as it stands?",
+    "118: Does this deal match what you want?",
+    "119: Would you go with this option?",
+    "120: Is this proposal something you'd accept?",
+    "121: Would this arrangement be suitable?",
+    "122: Do you think this offer is fair?",
+    "123: Is this option good enough for you?",
+    "124: Would you say yes to this deal?",
+    "125: Does this proposal meet your needs?",
+    "126: Is this offer agreeable to you?",
+    "127: Would this deal work on your end?",
+    "128: Do you feel good about this offer?",
+    "129: Is this proposal what you had in mind?",
+    "130: Would this option satisfy your concerns?",
+    "131: Does this deal sound fair to you?",
+    "132: Is this offer something you can go with?",
+    "133: Would this arrangement be okay?",
+    "134: Do you think this proposal is solid?",
+    "135: Is this option acceptable to you?",
+    "136: Would this offer solve it for you?",
+    "137: Does this proposal seem good enough?",
+    "138: Is this deal fine by you?",
+    "139: Would you agree with this offer?",
+    "140: Do you consider this proposal good?",
+    "141: Is this arrangement all right for you?",
+    "142: Would this offer be a good fit?",
+    "143: Does this deal cover what you need?",
+    "144: Is this proposal fair in your eyes?",
+    "145: Would you find this option good?",
+    "146: Does this arrangement make sense for you?",
+    "147: Is this deal the right one for you?",
+    "148: Would this offer close it for you?",
+    "149: Does this proposal work from your perspective?",
+    "150: Would this be the right choice for you?"
+  ],
+  
+  // Harsh Sentences (151-200): When V2 = TRUE
+  harsh: [
+    "151: Isn't it clear you should just take my deal?",
+    "152: What's stopping you from accepting my deal?",
+    "153: Do you really think you'll get better than this deal?",
+    "154: Are you going to waste time or take my deal?",
+    "155: Isn't my deal the only real option here?",
+    "156: Do you want to drag this out instead of taking my deal?",
+    "157: Are you seriously rejecting my deal?",
+    "158: Do you think refusing my deal will help you?",
+    "159: Isn't it obvious this is the deal to take?",
+    "160: Do you plan to keep stalling or accept my deal?",
+    "161: Can you even find a better deal than mine?",
+    "162: Do you think saying no will end well for you?",
+    "163: Are you ready to lose everything by refusing my deal?",
+    "164: Do you want this or not? Take the deal.",
+    "165: Isn't this your last chance to accept my deal?",
+    "166: Do you really want to walk away from this deal?",
+    "167: Are you blind to how fair my deal is?",
+    "168: Do you want to mess this up by rejecting my deal?",
+    "169: Are you making a mistake refusing this offer?",
+    "170: Isn't my deal the smartest choice you have?",
+    "171: Do you think dragging this further makes sense?",
+    "172: Are you willing to risk losing everything over this deal?",
+    "173: Isn't my deal already more than fair?",
+    "174: Do you want to keep arguing instead of closing?",
+    "175: Can you honestly say no to this deal?",
+    "176: Do you think anyone else would give you better?",
+    "177: Are you trying to throw away this opportunity?",
+    "178: Isn't my deal the only way forward?",
+    "179: Do you want to gamble instead of taking certainty?",
+    "180: Are you ready to face the loss if you refuse?",
+    "181: Isn't this deal already generous?",
+    "182: Do you want to keep playing games or accept?",
+    "183: Do you think rejecting me will work out for you?",
+    "184: Are you seriously doubting this deal?",
+    "185: Isn't my deal the only realistic choice?",
+    "186: Do you want to ruin this chance?",
+    "187: Are you wasting my time by hesitating?",
+    "188: Isn't it better to accept than to drag on?",
+    "189: Do you think delay will change my offer?",
+    "190: Are you really going to walk away empty-handed?",
+    "191: Isn't my deal already your best option?",
+    "192: Do you want to lose this once it's gone?",
+    "193: Can you deny this is the deal you need?",
+    "194: Are you choosing pride over progress by refusing?",
+    "195: Isn't this deal more than enough for you?",
+    "196: Do you plan to keep fighting instead of accepting?",
+    "197: Do you see any way out other than my deal?",
+    "198: Are you foolish enough to reject this?",
+    "199: Isn't this the point where you just take my deal?",
+    "200: Do you want to keep pushing and lose everything?"
   ]
 };
 
@@ -486,8 +599,8 @@ const SELLER_V2_VERBIAGE_SENTENCES = {
  * V2 = TRUE if (SBID - SBATNA < 10k) OR ((SBID - SBATNA) / (SBID - BBID) <= 0.1)
  * 
  * Rules:
- * - If V2 = TRUE: Return "Harsh" acceptance-seeking language (sentences 51-100)
- * - If V2 = FALSE: Return "Soft" acceptance-seeking language (sentences 1-50)
+ * - If V2 = TRUE: Return "Harsh" acceptance-seeking language (sentences 151-200)
+ * - If V2 = FALSE: Return "Soft" acceptance-seeking language (sentences 100-150)
  * 
  * @param SBATNA - Seller's Best Alternative to Negotiated Agreement (in thousands)
  * @param BBID - Buyer's current bid (in thousands)
@@ -583,6 +696,61 @@ function generateBuyerVerbiage(BBATNA: number, SBID: number, BBID: number, rand:
   const sentences = buyerV1Condition ? BUYER_VERBIAGE_SENTENCES.harsh : BUYER_VERBIAGE_SENTENCES.soft;
   
   // Randomly select from appropriate category (0-50 for soft, 51-100 for harsh)
+  return sentences[Math.floor(rand() * sentences.length)];
+}
+
+/**
+ * Buyer V2 Verbiage Generator for Buyer Acceptance-Seeking Language
+ * Generates acceptance-seeking language based on buyer's position relative to their BATNA
+ * 
+ * Core Buyer V2 Formula Logic:
+ * Buyer V2 = TRUE if (BBID - BBATNA < 10k) OR ((BBID - SBATNA) / (BBID - SBID) <= 0.1)
+ * 
+ * Rules:
+ * - If Buyer V2 = TRUE: Return "Harsh" acceptance-seeking language (sentences 251-300)
+ * - If Buyer V2 = FALSE: Return "Soft" acceptance-seeking language (sentences 200-250)
+ * 
+ * @param BBATNA - Buyer's Best Alternative to Negotiated Agreement (in thousands)
+ * @param SBATNA - Seller's Best Alternative to Negotiated Agreement (in thousands) 
+ * @param BBID - Buyer's current bid (in thousands)
+ * @param SBID - Seller's current bid (in thousands)
+ * @param rand - Random number generator function (0-1)
+ * @returns Appropriate acceptance-seeking verbiage string
+ */
+function generateBuyerV2Verbiage(BBATNA: number, SBATNA: number, BBID: number, SBID: number, rand: () => number): string {
+  // Handle edge cases - invalid or negative values
+  if (BBATNA < 0 || SBATNA < 0 || BBID < 0 || SBID < 0) {
+    // Default to soft language for invalid inputs
+    const sentences = BUYER_V2_VERBIAGE_SENTENCES.soft;
+    return sentences[Math.floor(rand() * sentences.length)];
+  }
+  
+  // Buyer V2 Formula Implementation:
+  // Buyer V2 = TRUE if (BBID - BBATNA < 10k) OR ((BBID - SBATNA) / (BBID - SBID) <= 0.1)
+  const buyerMargin = BBID - BBATNA; // How much above buyer's BATNA the bid is
+  const denominator = BBID - SBID;   // Difference between buyer and seller bids
+  
+  let buyerV2Condition = false;
+  
+  // First condition: BBID - BBATNA < 10k
+  // (Buyer's bid is less than $10k above their BATNA - tight margin)
+  if (buyerMargin < 10) {
+    buyerV2Condition = true;
+  }
+  
+  // Second condition: (BBID - SBATNA) / (BBID - SBID) <= 0.1 (10%)
+  // Handle division by zero case (when BBID equals SBID)
+  if (!buyerV2Condition && denominator !== 0) {
+    const ratio = (BBID - SBATNA) / denominator;
+    if (ratio <= 0.1) {
+      buyerV2Condition = true;
+    }
+  }
+  
+  // Select sentence category based on Buyer V2 result
+  const sentences = buyerV2Condition ? BUYER_V2_VERBIAGE_SENTENCES.harsh : BUYER_V2_VERBIAGE_SENTENCES.soft;
+  
+  // Randomly select from appropriate category (200-250 for soft, 251-300 for harsh)
   return sentences[Math.floor(rand() * sentences.length)];
 }
 
@@ -799,32 +967,55 @@ export class StepByStepNegotiation {
   }
 
   private generateBuyerInitialBid(): BidRecord {
-    const buyerRangeLower = Math.min(this.state.params.estimated_seller_batna, this.state.params.buyer_batna);
-    const buyerRangeUpper = Math.max(this.state.params.estimated_seller_batna, this.state.params.buyer_batna);
+    // FORCE the BBID formula for initial buyer bid
+    const buyer_profile = this.state.params.buyer_profile ?? "diplomat";
+    const adjustment = getPersonalityAdjustment(buyer_profile);
+    const personalityRange = getPersonalityRange(buyer_profile, "buyer");
     
-    // Buyer should bid LOWER than seller's current ask (starting price)
-    const sellerCurrentBid = this.state.current_seller_bid!;
-    const maxBuyerBid = Math.min(buyerRangeUpper, sellerCurrentBid - 1); // At least $1 below seller's ask
-    const effectiveUpper = Math.max(buyerRangeLower, maxBuyerBid);
+    // BBID = [max(BBID, ESBATNA × (1-x)), min(BBATNA, SBID, starting_price)]
+    // For initial bid, current_buyer_bid is null, so use 0 as minimum
+    const buyerRangeLower = Math.max(0, this.state.params.estimated_seller_batna * (1 - (adjustment.x || 0.02)));
+    const buyerRangeUpper = Math.min(this.state.params.buyer_batna, this.state.current_seller_bid as number, this.state.params.starting_price);
+    
+    // Ensure valid range
+    if (buyerRangeUpper < buyerRangeLower) {
+      console.log("Invalid buyer range for initial bid, terminating negotiation");
+      this.state.termination_reason = "no_deal";
+      this.state.is_finished = true;
+      return null as any;
+    }
     
     let first_buyer_bid: number;
-    if (effectiveUpper <= buyerRangeLower) {
-      first_buyer_bid = roundToHalf(buyerRangeLower);
+    if (buyerRangeUpper === buyerRangeLower) {
+      first_buyer_bid = buyerRangeLower;
     } else {
-      first_buyer_bid = uniform(this.state.rand, buyerRangeLower, effectiveUpper);
+      const rangeSize = buyerRangeUpper - buyerRangeLower;
+      const personalityFactor = uniform(this.state.rand, personalityRange.min, personalityRange.max);
+      first_buyer_bid = buyerRangeLower + (rangeSize * personalityFactor);
     }
     first_buyer_bid = roundToHalf(first_buyer_bid);
     
     this.state.current_round_index += 1;
     this.state.current_buyer_bid = first_buyer_bid;
     
-    // Generate buyer verbiage for initial bid
-    const initialBuyerVerbiage = generateBuyerVerbiage(
+    // Generate both V1 and V2 verbiage for buyer initial bid
+    const buyerV1Verbiage = generateBuyerVerbiage(
       this.state.params.buyer_batna,
       this.state.current_seller_bid as number,
       first_buyer_bid,
       this.state.rand
     );
+    
+    const buyerV2Verbiage = generateBuyerV2Verbiage(
+      this.state.params.buyer_batna,
+      this.state.params.seller_batna,
+      first_buyer_bid,
+      this.state.current_seller_bid as number,
+      this.state.rand
+    );
+    
+    // Combine V1 and V2 verbiage with line break
+    const initialBuyerVerbiage = buyerV1Verbiage + "\n" + buyerV2Verbiage;
     
     const bidRecord: BidRecord = {
       round: this.state.current_round_index,
@@ -832,7 +1023,7 @@ export class StepByStepNegotiation {
       bid: Number(first_buyer_bid.toFixed(2)),
       calculation_range: {
         lower: Number(buyerRangeLower.toFixed(2)),
-        upper: Number(effectiveUpper.toFixed(2)),
+        upper: Number(buyerRangeUpper.toFixed(2)),
       },
       batna_constraint_check: { valid: true, reason: "not_enforced" },
       timestamp: isoNow(),
@@ -886,7 +1077,9 @@ export class StepByStepNegotiation {
     const adjustment = getPersonalityAdjustment(seller_profile);
     const personalityRange = getPersonalityRange(seller_profile, "seller");
     
-    // Update estimated BATNAs before calculating bid range
+    // Update estimated BATNAs using bid formulas (reverse-engineered)
+    // From SBID formula: if seller bid is low, their BATNA must be lower
+    // From BBID formula: if buyer bid is high, their BATNA must be higher
     this.state.params.estimated_seller_batna = Math.min(this.state.params.estimated_seller_batna, this.state.current_seller_bid as number);
     this.state.params.estimated_buyer_batna = Math.max(this.state.params.estimated_buyer_batna, this.state.current_buyer_bid as number);
     
@@ -936,13 +1129,23 @@ export class StepByStepNegotiation {
     this.state.current_round_index += 1;
     this.state.current_seller_bid = next_seller_bid;
     
-    // Generate V2 verbiage for seller (acceptance-seeking)
-    const verbiage = generateV2Verbiage(
+    // Generate both V1 and V2 verbiage for seller
+    const v1Verbiage = generateV1Verbiage(
       this.state.params.seller_batna,
       this.state.current_buyer_bid as number,
       next_seller_bid,
       this.state.rand
     );
+    
+    const v2Verbiage = generateV2Verbiage(
+      this.state.params.seller_batna,
+      this.state.current_buyer_bid as number,
+      next_seller_bid,
+      this.state.rand
+    );
+    
+    // Combine V1 and V2 verbiage with line break
+    const verbiage = v1Verbiage + "\n" + v2Verbiage;
     
     const bidRecord: BidRecord = {
       round: this.state.current_round_index,
@@ -966,7 +1169,9 @@ export class StepByStepNegotiation {
     const adjustment = getPersonalityAdjustment(buyer_profile);
     const personalityRange = getPersonalityRange(buyer_profile, "buyer");
     
-    // Update estimated BATNAs before calculating bid range
+    // Update estimated BATNAs using bid formulas (reverse-engineered)
+    // From SBID formula: if seller bid is low, their BATNA must be lower
+    // From BBID formula: if buyer bid is high, their BATNA must be higher
     this.state.params.estimated_seller_batna = Math.min(this.state.params.estimated_seller_batna, this.state.current_seller_bid as number);
     this.state.params.estimated_buyer_batna = Math.max(this.state.params.estimated_buyer_batna, this.state.current_buyer_bid as number);
     
@@ -1015,13 +1220,24 @@ export class StepByStepNegotiation {
     this.state.current_round_index += 1;
     this.state.current_buyer_bid = next_buyer_bid;
     
-    // Generate buyer verbiage
-    const buyerVerbiage = generateBuyerVerbiage(
+    // Generate both V1 and V2 verbiage for buyer
+    const buyerV1Verbiage = generateBuyerVerbiage(
       this.state.params.buyer_batna,
       this.state.current_seller_bid as number,
       next_buyer_bid,
       this.state.rand
     );
+    
+    const buyerV2Verbiage = generateBuyerV2Verbiage(
+      this.state.params.buyer_batna,
+      this.state.params.seller_batna,
+      next_buyer_bid,
+      this.state.current_seller_bid as number,
+      this.state.rand
+    );
+    
+    // Combine V1 and V2 verbiage with line break
+    const buyerVerbiage = buyerV1Verbiage + "\n" + buyerV2Verbiage;
     
     const bidRecord: BidRecord = {
       round: this.state.current_round_index,
@@ -1229,31 +1445,84 @@ export function runSingleNegotiation(params: NegotiationParameters): SingleRunRe
     timestamp: isoNow(),
   });
 
-  // Initial Buyer Bid per requested rule:
-  // Uniform between Seller EBATNA and Buyer BATNA, but buyer must bid LOWER than seller's ask
-  const buyerRangeLower = Math.min(params.estimated_seller_batna, params.buyer_batna);
-  const buyerRangeUpper = Math.max(params.estimated_seller_batna, params.buyer_batna);
+  // FORCE the BBID formula for initial buyer bid
+  const buyerAdjustment = getPersonalityAdjustment(buyer_profile);
+  const buyerPersonalityRange = getPersonalityRange(buyer_profile, "buyer");
   
-  // Buyer should bid LOWER than seller's current ask (starting price)
-  const maxBuyerBid = Math.min(buyerRangeUpper, current_seller_bid - 1); // At least $1 below seller's ask
-  const effectiveBuyerUpper = Math.max(buyerRangeLower, maxBuyerBid);
+  // BBID = [max(BBID, ESBATNA × (1-x)), min(BBATNA, SBID, starting_price)]
+  // For initial bid, current_buyer_bid is null, so use 0 as minimum
+  const buyerRangeLower = Math.max(0, params.estimated_seller_batna * (1 - (buyerAdjustment.x || 0.02)));
+  const buyerRangeUpper = Math.min(params.buyer_batna, current_seller_bid, params.starting_price);
+  
+  // Ensure valid range
+  if (buyerRangeUpper < buyerRangeLower) {
+    console.log("Invalid buyer range for initial bid in runSingleNegotiation, terminating");
+    termination_reason = "no_deal";
+    return {
+      meta: { 
+        negotiation_id: "", 
+        starting_price: params.starting_price, 
+        buyer_batna: params.buyer_batna, 
+        seller_batna: params.seller_batna,
+        estimated_buyer_batna: params.estimated_buyer_batna,
+        estimated_seller_batna: params.estimated_seller_batna,
+        buyer_profile: buyer_profile,
+        seller_profile: seller_profile,
+        outcome: "no_deal", 
+        final_price: null, 
+        total_rounds: 0, 
+        termination_reason: "no_deal",
+        timestamp: isoNow(),
+        post_negotiation_analysis: {
+          batna_revealed: false,
+          seller_value_capture: 0,
+          buyer_value_capture: 0,
+          total_value_created: 0,
+          deal_feasible: false
+        }
+      },
+      rounds: [],
+      value_report: { 
+        batna_revelation: {
+          actual_buyer_batna: params.buyer_batna,
+          actual_seller_batna: params.seller_batna,
+          buyer_estimation_accuracy: 0,
+          seller_estimation_accuracy: 0
+        },
+        value_capture: { final_deal_price: null, seller_surplus: 0, buyer_surplus: 0, total_surplus: 0, surplus_split_ratio: null } 
+      },
+      sessionFiles: { folder: "", files: { "negotiation_meta.json": "", "bid_transcript.json": "", "value_analysis.json": "" } }
+    };
+  }
   
   let first_buyer_bid: number;
-  if (effectiveBuyerUpper <= buyerRangeLower) {
-    // No valid interval: use the single value
-    first_buyer_bid = roundToHalf(buyerRangeLower);
+  if (buyerRangeUpper === buyerRangeLower) {
+    first_buyer_bid = buyerRangeLower;
   } else {
-    first_buyer_bid = uniform(rand, buyerRangeLower, effectiveBuyerUpper);
+    const rangeSize = buyerRangeUpper - buyerRangeLower;
+    const personalityFactor = uniform(rand, buyerPersonalityRange.min, buyerPersonalityRange.max);
+    first_buyer_bid = buyerRangeLower + (rangeSize * personalityFactor);
   }
   first_buyer_bid = roundToHalf(first_buyer_bid);
   
-  // Generate buyer verbiage for initial bid
-  const initialBuyerVerbiage = generateBuyerVerbiage(
+  // Generate both V1 and V2 verbiage for buyer initial bid
+  const buyerV1Verbiage = generateBuyerVerbiage(
     params.buyer_batna,
     current_seller_bid,
     first_buyer_bid,
     rand
   );
+  
+  const buyerV2Verbiage = generateBuyerV2Verbiage(
+    params.buyer_batna,
+    params.seller_batna,
+    first_buyer_bid,
+    current_seller_bid,
+    rand
+  );
+  
+  // Combine V1 and V2 verbiage with line break
+  const initialBuyerVerbiage = buyerV1Verbiage + "\n" + buyerV2Verbiage;
   
   current_round_index += 1;
   const firstCheck = { valid: true, reason: "not_enforced" };
@@ -1263,7 +1532,7 @@ export function runSingleNegotiation(params: NegotiationParameters): SingleRunRe
     bid: Number(first_buyer_bid.toFixed(2)),
     calculation_range: {
       lower: Number(buyerRangeLower.toFixed(2)),
-      upper: Number(effectiveBuyerUpper.toFixed(2)),
+      upper: Number(buyerRangeUpper.toFixed(2)),
     },
     batna_constraint_check: firstCheck,
     timestamp: isoNow(),
@@ -1301,7 +1570,9 @@ export function runSingleNegotiation(params: NegotiationParameters): SingleRunRe
     const sellerAdjustment = getPersonalityAdjustment(seller_profile);
     const sellerPersonalityRange = getPersonalityRange(seller_profile, "seller");
     
-    // Update estimated BATNAs before calculating bid range
+    // Update estimated BATNAs using bid formulas (reverse-engineered)
+    // From SBID formula: if seller bid is low, their BATNA must be lower
+    // From BBID formula: if buyer bid is high, their BATNA must be higher
     params.estimated_seller_batna = Math.min(params.estimated_seller_batna, current_seller_bid as number);
     params.estimated_buyer_batna = Math.max(params.estimated_buyer_batna, current_buyer_bid as number);
     
@@ -1349,13 +1620,23 @@ export function runSingleNegotiation(params: NegotiationParameters): SingleRunRe
     let sellerCalcUpper = sellerRangeUpper;
     const sellerCheck = { valid: true, reason: "not_enforced" };
     
-    // Generate V2 verbiage for seller (acceptance-seeking)
-    const verbiage = generateV2Verbiage(
+    // Generate both V1 and V2 verbiage for seller
+    const v1Verbiage = generateV1Verbiage(
       params.seller_batna,
       current_buyer_bid as number,
       next_seller_bid,
       rand
     );
+    
+    const v2Verbiage = generateV2Verbiage(
+      params.seller_batna,
+      current_buyer_bid as number,
+      next_seller_bid,
+      rand
+    );
+    
+    // Combine V1 and V2 verbiage with line break
+    const verbiage = v1Verbiage + "\n" + v2Verbiage;
     
     current_round_index += 1;
     rounds.push({
@@ -1386,7 +1667,9 @@ export function runSingleNegotiation(params: NegotiationParameters): SingleRunRe
     const buyerAdjustment = getPersonalityAdjustment(buyer_profile);
     const buyerPersonalityRange = getPersonalityRange(buyer_profile, "buyer");
     
-    // Update estimated BATNAs before calculating bid range
+    // Update estimated BATNAs using bid formulas (reverse-engineered)
+    // From SBID formula: if seller bid is low, their BATNA must be lower
+    // From BBID formula: if buyer bid is high, their BATNA must be higher
     params.estimated_seller_batna = Math.min(params.estimated_seller_batna, current_seller_bid as number);
     params.estimated_buyer_batna = Math.max(params.estimated_buyer_batna, current_buyer_bid as number);
     
@@ -1434,13 +1717,24 @@ export function runSingleNegotiation(params: NegotiationParameters): SingleRunRe
     let buyerCalcUpper = buyerRangeUpper;
     const buyerCheck2 = { valid: true, reason: "not_enforced" };
     
-    // Generate buyer verbiage for counter-offer
-    const buyerVerbiage = generateBuyerVerbiage(
+    // Generate both V1 and V2 verbiage for buyer counter-offer
+    const buyerV1Verbiage = generateBuyerVerbiage(
       params.buyer_batna,
       current_seller_bid as number,
       next_buyer_bid,
       rand
     );
+    
+    const buyerV2Verbiage = generateBuyerV2Verbiage(
+      params.buyer_batna,
+      params.seller_batna,
+      next_buyer_bid,
+      current_seller_bid as number,
+      rand
+    );
+    
+    // Combine V1 and V2 verbiage with line break
+    const buyerVerbiage = buyerV1Verbiage + "\n" + buyerV2Verbiage;
     
     current_round_index += 1;
     rounds.push({
@@ -1706,7 +2000,22 @@ export function runMultipleSimulations(count: number): MultipleRunResult {
       if (roundData) {
         bidData.push(roundData.agent);
         bidData.push(roundData.bid.toFixed(2));
-        bidData.push(roundData.verbiage || "");  // Include verbiage (empty if not present)
+        // For CSV export: Show only sentence numbers for all agents
+        let csvVerbiage = "";
+        if (roundData.verbiage) {
+          if (roundData.agent === "seller") {
+            // Extract V2 number from combined V1+V2 verbiage
+            // V2 sentences are numbered 100-150 (soft) or 151-200 (harsh)
+            const v2Match = roundData.verbiage.match(/\n(\d{3}):/);
+            csvVerbiage = v2Match ? v2Match[1] : "";
+          } else {
+            // For buyers, extract V2 number from combined V1+V2 verbiage
+            // Buyer V2 sentences are numbered 200-250 (soft) or 251-300 (harsh)
+            const buyerV2Match = roundData.verbiage.match(/\n(\d{3}):/);
+            csvVerbiage = buyerV2Match ? buyerV2Match[1] : "";
+          }
+        }
+        bidData.push(csvVerbiage);
       } else {
         bidData.push("");  // Empty agent
         bidData.push("");  // Empty bid

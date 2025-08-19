@@ -120,6 +120,9 @@ const RightRobotRightTabs = styled(TabContainer)`
 
 const Tab = styled(motion.div)<{ isActive?: boolean }>`
   padding: 12px 8px;
+  width: 80px;
+  min-width: 80px;
+  box-sizing: border-box;
   background: ${props => props.isActive 
     ? 'linear-gradient(135deg, #4a90e2 0%, #357abd 100%)' 
     : 'linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.95) 100%)'};
@@ -132,7 +135,6 @@ const Tab = styled(motion.div)<{ isActive?: boolean }>`
   box-shadow: ${props => props.isActive 
     ? '0 8px 20px rgba(74, 144, 226, 0.4), 0 4px 8px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.3)' 
     : '0 8px 20px rgba(0, 0, 0, 0.15), 0 4px 8px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.8)'};
-  min-width: 40px;
   min-height: 80px;
   text-align: center;
   display: flex;
@@ -185,9 +187,9 @@ const TabTitle = styled.div`
 `
 
 const TabContent = styled.div<{ isActive?: boolean }>`
-  font-size: 8px;
-  font-weight: normal;
-  color: ${props => props.isActive ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.6)'};
+  font-size: 12px;
+  font-weight: 700;
+  color: ${props => props.isActive ? 'rgba(255, 255, 255, 0.9)' : 'rgba(0, 0, 0, 0.8)'};
   flex: 1;
   display: flex;
   align-items: center;
@@ -848,8 +850,8 @@ function App() {
   const data1 = [10, 20, 30, 40, 25, 35]
   const data2 = [15, 25, 35, 20, 45, 30]
 
-  const leftRobotTabs = ['Difference', 'Progress', 'Count', 'Distribution']
-  const rightRobotTabs = ['Difference', 'Progress', 'Count', 'Distribution']
+  const leftRobotTabs = ['Surplus', 'Progress', 'SBATNA', 'EBBATNA']
+  const rightRobotTabs = ['Surplus', 'Progress', 'BBATNA', 'ESBATNA']
 
   // Negotiation modal state
   const [showNegotiateModal, setShowNegotiateModal] = useState<boolean>(false)
@@ -862,6 +864,68 @@ function App() {
   const [transcriptMessages, setTranscriptMessages] = useState<TranscriptMessage[]>([])
   const [pendingOutcome, setPendingOutcome] = useState<{ message: string; type: 'robot1' | 'robot2'; speaker: string } | null>(null)
   const [finalOutcome, setFinalOutcome] = useState<string | null>(null)
+  
+  // Get current BATNA values for display
+  const getCurrentBatnaValues = () => {
+    if (!stepNegotiation) return null
+    const params = stepNegotiation.getState().params
+    return {
+      sbatna: params.seller_batna,
+      bbatna: params.buyer_batna,
+      ebbatna: params.estimated_buyer_batna,
+      esbatna: params.estimated_seller_batna
+    }
+  }
+
+  // Get current surplus values for display
+  const getCurrentSurplusValues = () => {
+    if (!stepNegotiation) return null
+    const state = stepNegotiation.getState()
+    const params = state.params
+    
+    // Only show surplus after we have transcript messages (after chat appears)
+    if (transcriptMessages.length === 0) return null
+    
+    // Get the latest bids
+    const sellerSurplus = state.current_seller_bid !== null 
+      ? state.current_seller_bid - params.seller_batna 
+      : 0
+    const buyerSurplus = state.current_buyer_bid !== null 
+      ? params.buyer_batna - state.current_buyer_bid 
+      : 0
+    
+    return {
+      sellerSurplus,
+      buyerSurplus
+    }
+  }
+
+  // Get bid data for graphs
+  const getBidDataForGraphs = () => {
+    if (!stepNegotiation) return { sellerBids: [], buyerBids: [] }
+    
+    const rounds = stepNegotiation.getCurrentRounds()
+    const sellerBids: { round: number; price: number; agent: 'seller' | 'buyer' }[] = []
+    const buyerBids: { round: number; price: number; agent: 'seller' | 'buyer' }[] = []
+    
+    rounds.forEach(round => {
+      if (round.agent === 'seller') {
+        sellerBids.push({
+          round: round.round,
+          price: round.bid,
+          agent: 'seller'
+        })
+      } else {
+        buyerBids.push({
+          round: round.round,
+          price: round.bid,
+          agent: 'buyer'
+        })
+      }
+    })
+    
+    return { sellerBids, buyerBids }
+  }
 
   // Simulation modal state
   const [showSimulationModal, setShowSimulationModal] = useState<boolean>(false)
@@ -975,8 +1039,8 @@ function App() {
         
         // Add verbiage first, then bid amount for initial seller bid
         if (r0.verbiage) {
-          // Remove the number prefix for display (e.g., "23: " -> "")
-          const cleanVerbiage = r0.verbiage.replace(/^\d+:\s*/, '')
+          // Remove number prefixes from both V1 and V2 sentences (e.g., "23: " -> "")
+          const cleanVerbiage = r0.verbiage.replace(/^\d+:\s*/gm, '')
           initialMessage = `${cleanVerbiage}\n\n$${r0.bid.toFixed(2)}K`
         } else {
           initialMessage = `$${r0.bid.toFixed(2)}K`
@@ -1070,8 +1134,8 @@ function App() {
           
           // Add verbiage first, then bid amount (both smaller)
           if (nextBid.verbiage) {
-            // Remove the number prefix for display (e.g., "23: " -> "")
-            const cleanVerbiage = nextBid.verbiage.replace(/^\d+:\s*/, '')
+            // Remove number prefixes from both V1 and V2 sentences (e.g., "23: " -> "")
+            const cleanVerbiage = nextBid.verbiage.replace(/^\d+:\s*/gm, '')
             msg = `${cleanVerbiage}\n\n$${nextBid.bid.toFixed(2)}K`
           } else {
             msg = `$${nextBid.bid.toFixed(2)}K`
@@ -1305,56 +1369,74 @@ function App() {
       
 
       <LeftRobotLeftTabs>
-        {leftRobotTabs.slice(0, 2).map((tab, index) => (
-          <Tab
-            key={`left-robot-left-tab-${index}`}
-            isActive={index === 0}
-            initial={{ opacity: 0, y: 10, scale: 0.9 }}
-            animate={{ 
-              opacity: 1, 
-              y: 0, 
-              scale: [1, 1.02, 1],
-            }}
-            transition={{ 
-              duration: 0.6, 
-              ease: "easeOut",
-              delay: index * 0.1,
-              scale: {
-                duration: 4,
-                repeat: Infinity,
-                ease: "easeInOut",
-                delay: index * 0.5
-              }
-            }}
-            whileHover={{ 
-              scale: 1.05,
-              boxShadow: index === 0 
-                ? '0 12px 28px rgba(74, 144, 226, 0.5), 0 6px 12px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.4)' 
-                : '0 12px 28px rgba(0, 0, 0, 0.2), 0 6px 12px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.9)'
-            }}
-          >
-            <TabTitle>{tab}</TabTitle>
-            <TabContent isActive={index === 0}>
-              
-            </TabContent>
-          </Tab>
-        ))}
+        {leftRobotTabs.slice(0, 2).map((tab, index) => {
+          const surplusValues = getCurrentSurplusValues()
+          let value = ''
+          if (surplusValues && tab === 'Surplus') {
+            value = `$${surplusValues.sellerSurplus.toFixed(0)}K`
+          }
+          return (
+            <Tab
+              key={`left-robot-left-tab-${index}`}
+              isActive={index === 0}
+              initial={{ opacity: 0, y: 10, scale: 0.9 }}
+              animate={{ 
+                opacity: 1, 
+                y: 0, 
+                scale: [1, 1.02, 1],
+              }}
+              transition={{ 
+                duration: 0.6, 
+                ease: "easeOut",
+                delay: index * 0.1,
+                scale: {
+                  duration: 4,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                  delay: index * 0.5
+                }
+              }}
+              whileHover={{ 
+                scale: 1.05,
+                boxShadow: index === 0 
+                  ? '0 12px 28px rgba(74, 144, 226, 0.5), 0 6px 12px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.4)' 
+                  : '0 12px 28px rgba(0, 0, 0, 0.2), 0 6px 12px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.9)'
+              }}
+            >
+              <TabTitle>{tab}</TabTitle>
+              <TabContent isActive={index === 0}>
+                {value}
+              </TabContent>
+            </Tab>
+          )
+        })}
       </LeftRobotLeftTabs>
 
       <RobotSection>
         <RobotContainer>
           <LeftRobotRightTabs>
-            {leftRobotTabs.slice(2, 4).map((tab, index) => (
-              <Tab
-                key={`left-robot-right-tab-${index}`}
-                isActive={false}
-              >
-                <TabTitle>{tab}</TabTitle>
-                <TabContent isActive={false}>
-                  
-                </TabContent>
-              </Tab>
-            ))}
+            {leftRobotTabs.slice(2, 4).map((tab, index) => {
+              const batnaValues = getCurrentBatnaValues()
+              let value = ''
+              if (batnaValues) {
+                if (tab === 'SBATNA') {
+                  value = `$${batnaValues.sbatna.toFixed(0)}K`
+                } else if (tab === 'EBBATNA') {
+                  value = `$${batnaValues.ebbatna.toFixed(0)}K`
+                }
+              }
+              return (
+                <Tab
+                  key={`left-robot-right-tab-${index}`}
+                  isActive={false}
+                >
+                  <TabTitle>{tab}</TabTitle>
+                  <TabContent isActive={false}>
+                    {value}
+                  </TabContent>
+                </Tab>
+              )
+            })}
           </LeftRobotRightTabs>
           
           <Robot 
@@ -1366,12 +1448,15 @@ function App() {
           />
           <DataGraph 
             data={data1} 
-            color="#4a90e2" 
+            color="#e74c3c" 
             title=""
             batnaPoint={null}
             batnaColor="#e74c3c"
             sellerBatnaPoint={null}
             buyerBatnaPoint={null}
+            bidData={getBidDataForGraphs().sellerBids}
+            batnaValue={getCurrentBatnaValues()?.sbatna}
+            estimatedBatnaValue={getCurrentBatnaValues()?.ebbatna}
           />
         </RobotContainer>
       </RobotSection>
@@ -1379,33 +1464,51 @@ function App() {
       <TranscriptBox messages={transcriptMessages} />
 
       <RightRobotLeftTabs>
-        {rightRobotTabs.slice(0, 2).map((tab, index) => (
-          <Tab
-            key={`right-robot-left-tab-${index}`}
-            isActive={index === 0}
-          >
-            <TabTitle>{tab}</TabTitle>
-            <TabContent isActive={index === 0}>
-              
-            </TabContent>
-          </Tab>
-        ))}
+        {rightRobotTabs.slice(0, 2).map((tab, index) => {
+          const surplusValues = getCurrentSurplusValues()
+          let value = ''
+          if (surplusValues && tab === 'Surplus') {
+            value = `$${surplusValues.buyerSurplus.toFixed(0)}K`
+          }
+          return (
+            <Tab
+              key={`right-robot-left-tab-${index}`}
+              isActive={index === 0}
+            >
+              <TabTitle>{tab}</TabTitle>
+              <TabContent isActive={index === 0}>
+                {value}
+              </TabContent>
+            </Tab>
+          )
+        })}
       </RightRobotLeftTabs>
 
       <RobotSection>
         <RobotContainer>
           <RightRobotRightTabs>
-            {rightRobotTabs.slice(2, 4).map((tab, index) => (
-              <Tab
-                key={`right-robot-right-tab-${index}`}
-                isActive={false}
-              >
-                <TabTitle>{tab}</TabTitle>
-                <TabContent isActive={false}>
-                  
-                </TabContent>
-              </Tab>
-            ))}
+            {rightRobotTabs.slice(2, 4).map((tab, index) => {
+              const batnaValues = getCurrentBatnaValues()
+              let value = ''
+              if (batnaValues) {
+                if (tab === 'BBATNA') {
+                  value = `$${batnaValues.bbatna.toFixed(0)}K`
+                } else if (tab === 'ESBATNA') {
+                  value = `$${batnaValues.esbatna.toFixed(0)}K`
+                }
+              }
+              return (
+                <Tab
+                  key={`right-robot-right-tab-${index}`}
+                  isActive={false}
+                >
+                  <TabTitle>{tab}</TabTitle>
+                  <TabContent isActive={false}>
+                    {value}
+                  </TabContent>
+                </Tab>
+              )
+            })}
           </RightRobotRightTabs>
           
           <Robot 
@@ -1417,12 +1520,15 @@ function App() {
           />
           <DataGraph 
             data={data2} 
-            color="#e74c3c" 
+            color="#4a90e2" 
             title=""
             batnaPoint={null}
             batnaColor="#4a90e2"
             sellerBatnaPoint={null}
             buyerBatnaPoint={null}
+            bidData={getBidDataForGraphs().buyerBids}
+            batnaValue={getCurrentBatnaValues()?.bbatna}
+            estimatedBatnaValue={getCurrentBatnaValues()?.esbatna}
           />
         </RobotContainer>
       </RobotSection>
