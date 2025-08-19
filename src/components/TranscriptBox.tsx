@@ -366,8 +366,20 @@ const TranscriptBox: React.FC<{ messages: TranscriptMessage[] }> = ({ messages }
                 >
                   {msg.message.split('\n').map((line, index) => (
                     <div key={index}>
-                      {line.startsWith('$') && line.endsWith('K') ? (
-                        <div style={{ fontSize: '16px', fontWeight: '700', marginTop: '8px' }}>{line}</div>
+                      {line.startsWith('$') && (line.endsWith('K') || line.includes('(Month')) ? (
+                        <div style={{ fontSize: '16px', fontWeight: '700', marginTop: '8px' }}>
+                          {line.includes('(Month') ? (
+                            // Split price and month for better formatting
+                            <>
+                              {line.split(' (Month')[0]}
+                              <span style={{ fontSize: '13px', fontWeight: '600', opacity: 0.9, marginLeft: '8px' }}>
+                                (Month {line.split('(Month ')[1]?.replace(')', '')})
+                              </span>
+                            </>
+                          ) : (
+                            line
+                          )}
+                        </div>
                       ) : (
                         line
                       )}

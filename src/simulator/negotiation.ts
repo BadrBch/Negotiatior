@@ -18,12 +18,14 @@ export interface NegotiationParameters {
   // Negotiation styles (optional). Defaults: buyer "diplomat", seller "moderate"
   buyer_profile?: BuyerProfile;
   seller_profile?: SellerProfile;
+  month_to_key?: number; // Month-to-key value for negotiation timeline
 }
 
 export interface BidRecord {
   round: number;
   agent: "buyer" | "seller";
   bid: number;
+  month: number; // Month-to-key coordinate for graph plotting
   calculation_range: { lower: number; upper: number };
   batna_constraint_check: { valid: boolean; reason: string };
   timestamp: string;
@@ -51,6 +53,7 @@ export interface NegotiationMeta {
   outcome: NegotiationOutcome;
   final_price: number | null;
   total_rounds: number;
+  month_to_key: number;
   post_negotiation_analysis: PostNegotiationAnalysis;
   random_seed?: number | null;
   termination_reason?: string | null;
@@ -98,6 +101,12 @@ function mulberry32(seed: number) {
 // Helper function to check if negotiation is within ZOPA
 function isWithinZOPA(buyerBatna: number, sellerBatna: number): boolean {
   return buyerBatna >= sellerBatna;
+}
+
+// Helper function to calculate percentage change
+function pctChange(newVal: number, oldVal: number): number {
+  if (oldVal === 0) return 0; // Avoid division by zero
+  return (newVal - oldVal) / oldVal;
 }
 
 // Helper function to get personality adjustment factors
@@ -822,6 +831,9 @@ export interface StepNegotiationState {
   rounds: BidRecord[];
   current_seller_bid: number | null;
   current_buyer_bid: number | null;
+  previous_seller_bid: number | null; // Track previous seller bid for month-to-key rule
+  previous_buyer_bid: number | null; // Track previous buyer bid for month-to-key rule  
+  current_month: number; // Current month-to-key value (m)
   current_round_index: number;
   termination_reason: string | null;
   final_price: number | null;
@@ -847,6 +859,9 @@ export class StepByStepNegotiation {
       rounds: [],
       current_seller_bid: null,
       current_buyer_bid: null,
+      previous_seller_bid: null,
+      previous_buyer_bid: null,
+      current_month: 12, // Initialize month-to-key at 12 (starting position)
       current_round_index: 1,
       termination_reason: null,
       final_price: null,
@@ -908,6 +923,7 @@ export class StepByStepNegotiation {
       round: this.state.current_round_index,
       agent: "seller",
       bid: Number(this.state.current_seller_bid.toFixed(2)),
+      month: this.state.current_month, // Use current month-to-key value
       calculation_range: { 
         lower: Number(this.state.current_seller_bid.toFixed(2)), 
         upper: Number(this.state.current_seller_bid.toFixed(2)) 
@@ -1021,6 +1037,7 @@ export class StepByStepNegotiation {
       round: this.state.current_round_index,
       agent: "buyer",
       bid: Number(first_buyer_bid.toFixed(2)),
+      month: this.state.current_month, // Use current month-to-key value
       calculation_range: {
         lower: Number(buyerRangeLower.toFixed(2)),
         upper: Number(buyerRangeUpper.toFixed(2)),
@@ -1126,6 +1143,12 @@ export class StepByStepNegotiation {
       }
     }
     
+    // Update month-to-key value based on seller rule before updating current_seller_bid
+    this.updateMonthToKey(next_seller_bid);
+    
+    // Update previous seller bid before setting new one
+    this.state.previous_seller_bid = this.state.current_seller_bid;
+    
     this.state.current_round_index += 1;
     this.state.current_seller_bid = next_seller_bid;
     
@@ -1151,6 +1174,7 @@ export class StepByStepNegotiation {
       round: this.state.current_round_index,
       agent: "seller",
       bid: Number(next_seller_bid.toFixed(2)),
+      month: this.state.current_month, // Use updated month-to-key value
       calculation_range: { 
         lower: Number(sellerRangeLower.toFixed(2)), 
         upper: Number(sellerRangeUpper.toFixed(2)) 
@@ -1216,6 +1240,8 @@ export class StepByStepNegotiation {
       }
     }
     
+    // Update previous buyer bid before setting new one
+    this.state.previous_buyer_bid = this.state.current_buyer_bid;
     
     this.state.current_round_index += 1;
     this.state.current_buyer_bid = next_buyer_bid;
@@ -1243,6 +1269,7 @@ export class StepByStepNegotiation {
       round: this.state.current_round_index,
       agent: "buyer",
       bid: Number(next_buyer_bid.toFixed(2)),
+      month: this.state.current_month, // Use current month-to-key value
       calculation_range: { 
         lower: Number(buyerRangeLower.toFixed(2)), 
         upper: Number(buyerRangeUpper.toFixed(2)) 
@@ -1300,6 +1327,7 @@ export class StepByStepNegotiation {
       outcome,
       final_price: this.state.final_price,
       total_rounds: this.state.rounds.length ? Math.max(...this.state.rounds.map((r) => r.round)) : 0,
+      month_to_key: this.state.current_month,
       post_negotiation_analysis: {
         batna_revealed: true,
         seller_value_capture: seller_surplus,
@@ -1354,6 +1382,29 @@ export class StepByStepNegotiation {
 
     return { meta, rounds: this.state.rounds, value_report, sessionFiles };
   }
+
+  /**
+   * Updates the month-to-key value based on seller rule (Case 1 only)
+   * When a new seller bid arrives, calculate percentage change vs previous seller bid
+   * If price goes down by less than 10% (pct_change > -0.10), then m = max(0, m - 1)
+   * Otherwise, m is unchanged
+   * Skip rule on the first seller bid (no previous bid to compare)
+   */
+  private updateMonthToKey(newSellerBid: number): void {
+    // Skip rule on first seller bid (no previous bid to compare)
+    if (this.state.previous_seller_bid === null) {
+      return;
+    }
+
+    // Calculate percentage change: (new - old) / old
+    const pct_change_value = pctChange(newSellerBid, this.state.previous_seller_bid);
+    
+    // Seller rule (Case 1): If price goes down by less than 10% (pct_change > -0.10), then m = max(0, m - 1)
+    if (pct_change_value > -0.10) {
+      this.state.current_month = Math.max(0, this.state.current_month - 1);
+    }
+    // Otherwise, m is unchanged (no action needed)
+  }
 }
 
 export function runSingleNegotiation(params: NegotiationParameters): SingleRunResult {
@@ -1376,6 +1427,26 @@ export function runSingleNegotiation(params: NegotiationParameters): SingleRunRe
 
   let current_seller_bid: number | null = null;
   let current_buyer_bid: number | null = null;
+  
+  // Month-to-key tracking variables
+  let previous_seller_bid: number | null = null;
+  let current_month: number = 12; // Initialize month-to-key at 12
+  
+  // Helper function to update month-to-key value based on seller rule
+  const updateMonthToKey = (next_seller_bid: number) => {
+    if (previous_seller_bid === null) {
+      return; // No previous bid to compare against
+    }
+    
+    // Calculate percentage change
+    const pct_change_value = (next_seller_bid - previous_seller_bid) / previous_seller_bid;
+    
+    // Seller rule: If price goes down by less than 10% (pct_change > -0.10), then m = max(0, m - 1)
+    if (pct_change_value > -0.10) {
+      current_month = Math.max(0, current_month - 1);
+    }
+    // Otherwise, m is unchanged (no action needed)
+  };
 
   // Negotiation styles
   const buyer_profile: BuyerProfile = params.buyer_profile ?? "diplomat";
@@ -1435,11 +1506,13 @@ export function runSingleNegotiation(params: NegotiationParameters): SingleRunRe
 
   // Seed initial seller ask (starting price) as round 1 (no BATNA enforcement)
   current_seller_bid = roundToHalf(params.starting_price);
+  previous_seller_bid = current_seller_bid; // Set initial previous bid for month tracking
   const initialSellerCheck = { valid: true, reason: "not_enforced" };
   rounds.push({
     round: current_round_index,
     agent: "seller",
     bid: Number(current_seller_bid.toFixed(2)),
+    month: current_month, // Use current month-to-key value
     calculation_range: { lower: Number(current_seller_bid.toFixed(2)), upper: Number(current_seller_bid.toFixed(2)) },
     batna_constraint_check: initialSellerCheck,
     timestamp: isoNow(),
@@ -1471,6 +1544,7 @@ export function runSingleNegotiation(params: NegotiationParameters): SingleRunRe
         outcome: "no_deal", 
         final_price: null, 
         total_rounds: 0, 
+        month_to_key: 12,
         termination_reason: "no_deal",
         timestamp: isoNow(),
         post_negotiation_analysis: {
@@ -1530,6 +1604,7 @@ export function runSingleNegotiation(params: NegotiationParameters): SingleRunRe
     round: current_round_index,
     agent: "buyer",
     bid: Number(first_buyer_bid.toFixed(2)),
+    month: current_month, // Use current month-to-key value
     calculation_range: {
       lower: Number(buyerRangeLower.toFixed(2)),
       upper: Number(buyerRangeUpper.toFixed(2)),
@@ -1635,6 +1710,9 @@ export function runSingleNegotiation(params: NegotiationParameters): SingleRunRe
       rand
     );
     
+    // Update month-to-key value based on seller rule before recording bid
+    updateMonthToKey(next_seller_bid);
+    
     // Combine V1 and V2 verbiage with line break
     const verbiage = v1Verbiage + "\n" + v2Verbiage;
     
@@ -1643,11 +1721,15 @@ export function runSingleNegotiation(params: NegotiationParameters): SingleRunRe
       round: current_round_index,
       agent: "seller",
       bid: Number(next_seller_bid.toFixed(2)),
+      month: current_month, // Use updated month-to-key value
       calculation_range: { lower: Number(sellerCalcLower.toFixed(2)), upper: Number(sellerCalcUpper.toFixed(2)) },
       batna_constraint_check: sellerCheck,
       timestamp: isoNow(),
       verbiage: verbiage,
     });
+    
+    // Update previous seller bid before setting new one
+    previous_seller_bid = current_seller_bid;
     current_seller_bid = next_seller_bid;
     
     // continue until accept or walk
@@ -1741,6 +1823,7 @@ export function runSingleNegotiation(params: NegotiationParameters): SingleRunRe
       round: current_round_index,
       agent: "buyer",
       bid: Number(next_buyer_bid.toFixed(2)),
+      month: current_month, // Use current month-to-key value
       calculation_range: { lower: Number(buyerCalcLower.toFixed(2)), upper: Number(buyerCalcUpper.toFixed(2)) },
       batna_constraint_check: buyerCheck2,
       timestamp: isoNow(),
@@ -1799,6 +1882,9 @@ export function runSingleNegotiation(params: NegotiationParameters): SingleRunRe
     deal_feasible_flag = true;
   }
 
+  // Use the final current_month value for month_to_key
+  const finalMonth = current_month;
+
   const meta: NegotiationMeta = {
     negotiation_id,
     timestamp: isoNow(),
@@ -1812,6 +1898,7 @@ export function runSingleNegotiation(params: NegotiationParameters): SingleRunRe
     outcome,
     final_price,
     total_rounds: rounds.length ? Math.max(...rounds.map((r) => r.round)) : 0,
+    month_to_key: finalMonth,
     post_negotiation_analysis: {
       batna_revealed: true,
       seller_value_capture: seller_surplus,
@@ -1954,6 +2041,7 @@ export function runMultipleSimulations(count: number): MultipleRunResult {
     "outcome",
     "final_price",
     "total_rounds",
+    "month_to_key",
     "termination_reason",
     "seller_surplus",
     "buyer_surplus",
@@ -1987,6 +2075,7 @@ export function runMultipleSimulations(count: number): MultipleRunResult {
       res.meta.outcome,
       res.meta.final_price != null ? res.meta.final_price.toFixed(2) : "",
       String(res.meta.total_rounds),
+      String(res.meta.month_to_key),
       res.meta.termination_reason ?? "",
       vc.seller_surplus.toFixed(2),
       vc.buyer_surplus.toFixed(2),

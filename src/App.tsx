@@ -856,6 +856,7 @@ function App() {
   // Negotiation modal state
   const [showNegotiateModal, setShowNegotiateModal] = useState<boolean>(false)
   const [negotiationPrice, setNegotiationPrice] = useState<number>(750)
+  const [monthToKey, setMonthToKey] = useState<number>(12)
   const [selectedBuyerProfile, setSelectedBuyerProfile] = useState<BuyerProfile>('bulldozer')
   const [selectedSellerProfile, setSelectedSellerProfile] = useState<SellerProfile>('bulldozer')
 
@@ -875,6 +876,13 @@ function App() {
       ebbatna: params.estimated_buyer_batna,
       esbatna: params.estimated_seller_batna
     }
+  }
+
+  // Get current month-to-key value
+  const getCurrentMonthToKey = () => {
+    if (!stepNegotiation) return monthToKey // Return initialization value if no negotiation
+    const params = stepNegotiation.getState().params
+    return params.month_to_key ?? 12 // Default to 12 if not set
   }
 
   // Get current surplus values for display
@@ -900,31 +908,33 @@ function App() {
     }
   }
 
-  // Get bid data for graphs
+  // Get bid data for graphs with complete timeline visualization
   const getBidDataForGraphs = () => {
-    if (!stepNegotiation) return { sellerBids: [], buyerBids: [] }
+    if (!stepNegotiation) return { sellerBids: [], buyerBids: [], allRounds: [] }
     
     const rounds = stepNegotiation.getCurrentRounds()
-    const sellerBids: { round: number; price: number; agent: 'seller' | 'buyer' }[] = []
-    const buyerBids: { round: number; price: number; agent: 'seller' | 'buyer' }[] = []
+    const sellerBids: { month: number; price: number; agent: 'seller' | 'buyer'; roundIndex: number }[] = []
+    const buyerBids: { month: number; price: number; agent: 'seller' | 'buyer'; roundIndex: number }[] = []
+    const allRounds: { month: number; price: number; agent: 'seller' | 'buyer'; roundIndex: number }[] = []
     
-    rounds.forEach(round => {
+    rounds.forEach((round, index) => {
+      const bidData = {
+        month: round.month, // Use actual month value from bid record
+        price: round.bid,
+        agent: round.agent,
+        roundIndex: index
+      }
+      
+      allRounds.push(bidData)
+      
       if (round.agent === 'seller') {
-        sellerBids.push({
-          round: round.round,
-          price: round.bid,
-          agent: 'seller'
-        })
+        sellerBids.push(bidData)
       } else {
-        buyerBids.push({
-          round: round.round,
-          price: round.bid,
-          agent: 'buyer'
-        })
+        buyerBids.push(bidData)
       }
     })
     
-    return { sellerBids, buyerBids }
+    return { sellerBids, buyerBids, allRounds }
   }
 
   // Simulation modal state
@@ -1025,6 +1035,7 @@ function App() {
         random_seed: null,
         buyer_profile: selectedBuyerProfile,
         seller_profile: selectedSellerProfile,
+        month_to_key: monthToKey,
       }
       
       // Create new step-by-step negotiation
@@ -1037,13 +1048,13 @@ function App() {
         const r0 = currentRounds[0]
         let initialMessage = ''
         
-        // Add verbiage first, then bid amount for initial seller bid
+        // Add verbiage first, then bid amount with month-to-key for initial seller bid
         if (r0.verbiage) {
           // Remove number prefixes from both V1 and V2 sentences (e.g., "23: " -> "")
           const cleanVerbiage = r0.verbiage.replace(/^\d+:\s*/gm, '')
-          initialMessage = `${cleanVerbiage}\n\n$${r0.bid.toFixed(2)}K`
+          initialMessage = `${cleanVerbiage}\n\n$${r0.bid.toFixed(2)}K (Month ${r0.month})`
         } else {
-          initialMessage = `$${r0.bid.toFixed(2)}K`
+          initialMessage = `$${r0.bid.toFixed(2)}K (Month ${r0.month})`
         }
         
         const msgs: TranscriptMessage[] = [{
@@ -1132,13 +1143,13 @@ function App() {
           const speaker = nextBid.agent === 'seller' ? 'Seller' : 'Buyer'
           let msg = ''
           
-          // Add verbiage first, then bid amount (both smaller)
+          // Add verbiage first, then bid amount with month-to-key
           if (nextBid.verbiage) {
             // Remove number prefixes from both V1 and V2 sentences (e.g., "23: " -> "")
             const cleanVerbiage = nextBid.verbiage.replace(/^\d+:\s*/gm, '')
-            msg = `${cleanVerbiage}\n\n$${nextBid.bid.toFixed(2)}K`
+            msg = `${cleanVerbiage}\n\n$${nextBid.bid.toFixed(2)}K (Month ${nextBid.month})`
           } else {
-            msg = `$${nextBid.bid.toFixed(2)}K`
+            msg = `$${nextBid.bid.toFixed(2)}K (Month ${nextBid.month})`
           }
           
           return [...withoutLoading, {
@@ -1273,6 +1284,21 @@ function App() {
               </ValueDisplay>
             </SliderContainer>
             
+            <SliderContainer>
+              <SliderLabel>Month-to-Key: 0 - 12 months</SliderLabel>
+              <Slider
+                type="range"
+                min="0"
+                max="12"
+                step="1"
+                value={monthToKey}
+                onChange={(e) => setMonthToKey(parseInt(e.target.value))}
+              />
+              <ValueDisplay>
+                {monthToKey} {monthToKey === 1 ? 'month' : 'months'}
+              </ValueDisplay>
+            </SliderContainer>
+            
             <div style={{marginBottom: '25px'}}>
               <div style={{fontSize: '16px', fontWeight: 'bold', textAlign: 'center', marginBottom: '15px', color: '#e74c3c'}}>
                 Seller Personality
@@ -1306,7 +1332,8 @@ function App() {
             </div>
             
             <div style={{textAlign: 'center', margin: '20px 0', fontSize: '14px', color: '#666'}}>
-              BATNAs will be randomly generated to match the simulation algorithm exactly.
+              BATNAs will be randomly generated to match the simulation algorithm exactly.<br/>
+              Month-to-Key represents the time horizon for the negotiation (available for graph plotting).
             </div>
             
             <ButtonGroup>
@@ -1318,6 +1345,7 @@ function App() {
               </ModalButton>
               <RandomButton onClick={() => {
                 setNegotiationPrice(Math.floor(Math.random() * (1000 - 250 + 1)) + 250)
+                setMonthToKey(Math.floor(Math.random() * 13)) // 0-12 inclusive
                 const buyerProfiles: BuyerProfile[] = ['bulldozer', 'diplomat', 'chameleon']
                 const sellerProfiles: SellerProfile[] = ['bulldozer', 'diplomat', 'chameleon']
                 setSelectedBuyerProfile(buyerProfiles[Math.floor(Math.random() * buyerProfiles.length)])
@@ -1455,6 +1483,7 @@ function App() {
             sellerBatnaPoint={null}
             buyerBatnaPoint={null}
             bidData={getBidDataForGraphs().sellerBids}
+            allRounds={getBidDataForGraphs().allRounds}
             batnaValue={getCurrentBatnaValues()?.sbatna}
             estimatedBatnaValue={getCurrentBatnaValues()?.ebbatna}
           />
@@ -1527,6 +1556,7 @@ function App() {
             sellerBatnaPoint={null}
             buyerBatnaPoint={null}
             bidData={getBidDataForGraphs().buyerBids}
+            allRounds={getBidDataForGraphs().allRounds}
             batnaValue={getCurrentBatnaValues()?.bbatna}
             estimatedBatnaValue={getCurrentBatnaValues()?.esbatna}
           />
