@@ -1486,11 +1486,6 @@ function App() {
             allRounds={getBidDataForGraphs().allRounds}
             batnaValue={getCurrentBatnaValues()?.sbatna}
             estimatedBatnaValue={getCurrentBatnaValues()?.ebbatna}
-            showBothBids={true}
-            buyerBidData={getBidDataForGraphs().buyerBids}
-            sellerBidData={getBidDataForGraphs().sellerBids}
-            buyerColor="#4a90e2"
-            sellerColor="#e74c3c"
           />
         </RobotContainer>
       </RobotSection>
@@ -1564,11 +1559,6 @@ function App() {
             allRounds={getBidDataForGraphs().allRounds}
             batnaValue={getCurrentBatnaValues()?.bbatna}
             estimatedBatnaValue={getCurrentBatnaValues()?.esbatna}
-            showBothBids={true}
-            buyerBidData={getBidDataForGraphs().buyerBids}
-            sellerBidData={getBidDataForGraphs().sellerBids}
-            buyerColor="#4a90e2"
-            sellerColor="#e74c3c"
           />
         </RobotContainer>
       </RobotSection>
