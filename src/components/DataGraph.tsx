@@ -15,6 +15,7 @@ interface DataGraphProps {
   allRounds?: { month: number; price: number; agent: 'seller' | 'buyer'; roundIndex: number }[]
   batnaValue?: number
   estimatedBatnaValue?: number
+  showAllBids?: boolean
 }
 
 const GraphContainer = styled(motion.div)`
@@ -80,7 +81,8 @@ const DataGraph: React.FC<DataGraphProps> = ({
   bidData = [],
   allRounds = [],
   batnaValue,
-  estimatedBatnaValue
+  estimatedBatnaValue,
+  showAllBids = false
 }) => {
   const svgRef = useRef<SVGSVGElement>(null)
 
@@ -124,9 +126,12 @@ const DataGraph: React.FC<DataGraphProps> = ({
     const allBatnaPoints = [sellerBatnaPoint, buyerBatnaPoint, batnaPoint].filter(Boolean);
     const allValues = [];
     
+    // Determine which data to use for calculations
+    const dataToUse = showAllBids && allRounds.length > 0 ? allRounds : bidData;
+    
     // Include bid data in range calculation
-    if (bidData.length > 0) {
-      allValues.push(...bidData.map(bid => bid.price));
+    if (dataToUse.length > 0) {
+      allValues.push(...dataToUse.map(bid => bid.price));
     }
     
     // Include BATNA values in range calculation
@@ -139,10 +144,10 @@ const DataGraph: React.FC<DataGraphProps> = ({
     let xMin = 0, xMax = 16, yMin = 0, yMax = 1000;
 
     // Center X domain around current month-to-key (M) from latest bid
-    if (bidData.length > 0) {
-      const currentM = bidData[bidData.length - 1].month;
-      xMin = Math.max(0, currentM - 4);
-      xMax = Math.min(16, currentM + 4);
+    if (dataToUse.length > 0) {
+      const currentM = dataToUse[dataToUse.length - 1].month;
+      xMin = Math.max(0, currentM - 3);
+      xMax = Math.min(16, currentM + 3);
     }
 
     // Simpler dynamic scaling for Y
@@ -267,59 +272,115 @@ const DataGraph: React.FC<DataGraphProps> = ({
     }
     
     // Add legend for month changes if there are bid data points
-    if (bidData.length > 0) {
+    if (dataToUse.length > 0) {
       const legendGroup = chart.append('g')
         .attr('transform', `translate(${chartWidth - 120}, 10)`)
+      
+      // Calculate legend height based on content
+      const legendHeight = showAllBids ? 85 : 55
       
       // Legend background
       legendGroup.append('rect')
         .attr('x', -8)
         .attr('y', -8)
         .attr('width', 130)
-        .attr('height', 55)
+        .attr('height', legendHeight)
         .attr('fill', 'rgba(255, 255, 255, 0.95)')
         .attr('stroke', '#ddd')
         .attr('stroke-width', 1)
         .attr('rx', 6)
       
-      // Normal bid legend
-      legendGroup.append('circle')
-        .attr('cx', 8)
-        .attr('cy', 12)
-        .attr('r', 5)
-        .attr('fill', color)
-        .attr('stroke', '#fff')
-        .attr('stroke-width', 2)
-      
-      legendGroup.append('text')
-        .attr('x', 20)
-        .attr('y', 16)
-        .attr('font-size', '12px')
-        .attr('font-weight', '600')
-        .attr('fill', '#555')
-        .text('Normal bid')
-      
-      // Month decrease legend
-      legendGroup.append('circle')
-        .attr('cx', 8)
-        .attr('cy', 35)
-        .attr('r', 6)
-        .attr('fill', '#f39c12')
-        .attr('stroke', '#e67e22')
-        .attr('stroke-width', 3)
-      
-      legendGroup.append('text')
-        .attr('x', 20)
-        .attr('y', 39)
-        .attr('font-size', '12px')
-        .attr('font-weight', '600')
-        .attr('fill', '#555')
-        .text('Month decrease')
+      if (showAllBids) {
+        // Seller bid legend
+        legendGroup.append('circle')
+          .attr('cx', 8)
+          .attr('cy', 12)
+          .attr('r', 5)
+          .attr('fill', '#e74c3c')
+          .attr('stroke', '#fff')
+          .attr('stroke-width', 2)
+        
+        legendGroup.append('text')
+          .attr('x', 20)
+          .attr('y', 16)
+          .attr('font-size', '12px')
+          .attr('font-weight', '600')
+          .attr('fill', '#555')
+          .text('Seller bid')
+        
+        // Buyer bid legend
+        legendGroup.append('circle')
+          .attr('cx', 8)
+          .attr('cy', 35)
+          .attr('r', 5)
+          .attr('fill', '#4a90e2')
+          .attr('stroke', '#fff')
+          .attr('stroke-width', 2)
+        
+        legendGroup.append('text')
+          .attr('x', 20)
+          .attr('y', 39)
+          .attr('font-size', '12px')
+          .attr('font-weight', '600')
+          .attr('fill', '#555')
+          .text('Buyer bid')
+        
+        // Month decrease legend
+        legendGroup.append('circle')
+          .attr('cx', 8)
+          .attr('cy', 58)
+          .attr('r', 6)
+          .attr('fill', '#f39c12')
+          .attr('stroke', '#e67e22')
+          .attr('stroke-width', 3)
+        
+        legendGroup.append('text')
+          .attr('x', 20)
+          .attr('y', 62)
+          .attr('font-size', '12px')
+          .attr('font-weight', '600')
+          .attr('fill', '#555')
+          .text('Month decrease')
+      } else {
+        // Normal bid legend
+        legendGroup.append('circle')
+          .attr('cx', 8)
+          .attr('cy', 12)
+          .attr('r', 5)
+          .attr('fill', color)
+          .attr('stroke', '#fff')
+          .attr('stroke-width', 2)
+        
+        legendGroup.append('text')
+          .attr('x', 20)
+          .attr('y', 16)
+          .attr('font-size', '12px')
+          .attr('font-weight', '600')
+          .attr('fill', '#555')
+          .text('Normal bid')
+        
+        // Month decrease legend
+        legendGroup.append('circle')
+          .attr('cx', 8)
+          .attr('cy', 35)
+          .attr('r', 6)
+          .attr('fill', '#f39c12')
+          .attr('stroke', '#e67e22')
+          .attr('stroke-width', 3)
+        
+        legendGroup.append('text')
+          .attr('x', 20)
+          .attr('y', 39)
+          .attr('font-size', '12px')
+          .attr('font-weight', '600')
+          .attr('fill', '#555')
+          .text('Month decrease')
+      }
     }
     
     // Add current month-to-key indicator if we have bid data
-    if (bidData.length > 0) {
-      const currentMonth = bidData[bidData.length - 1].month
+    if (dataToUse.length > 0) {
+      const currentMonth = dataToUse[dataToUse.length - 1].month
       const currentMonthGroup = chart.append('g')
         .attr('transform', `translate(10, 10)`)
       
@@ -426,20 +487,26 @@ const DataGraph: React.FC<DataGraphProps> = ({
     }
 
     // Draw bid data points with enhanced month visualization
-    bidData.forEach((bid, index) => {
+    dataToUse.forEach((bid, index) => {
       const x = xScale(bid.month)
       const y = yScale(bid.price)
       
       // Determine if month decreased from previous bid (seller rule triggered)
-      const monthDecreased = index > 0 && bid.month < bidData[index - 1].month
-      const monthChanged = index > 0 && bid.month !== bidData[index - 1].month
+      const monthDecreased = index > 0 && bid.month < dataToUse[index - 1].month
+      const monthChanged = index > 0 && bid.month !== dataToUse[index - 1].month
+      
+      // Determine bid color based on agent and showAllBids setting
+      let bidColor = color;
+      if (showAllBids && bid.agent) {
+        bidColor = bid.agent === 'seller' ? '#e74c3c' : '#4a90e2';
+      }
       
       // Add bid point with different styling based on month change
       const bidCircle = chart.append('circle')
         .attr('cx', x)
         .attr('cy', y)
         .attr('r', 0)
-        .attr('fill', monthDecreased ? '#f39c12' : color)
+        .attr('fill', monthDecreased ? '#f39c12' : bidColor)
         .attr('stroke', monthDecreased ? '#e67e22' : '#fff')
         .attr('stroke-width', monthDecreased ? 3 : 2)
         .attr('opacity', 0.9)
@@ -448,11 +515,11 @@ const DataGraph: React.FC<DataGraphProps> = ({
           // Show tooltip with bid and month information
           const tooltipContent = `
             <div style="text-align: center;">
-              <div style="font-weight: 700; margin-bottom: 4px;">Bid ${index + 1}</div>
+              <div style="font-weight: 700; margin-bottom: 4px;">${showAllBids && bid.agent ? bid.agent.charAt(0).toUpperCase() + bid.agent.slice(1) : ''} Bid ${index + 1}</div>
               <div>Price: $${bid.price.toFixed(2)}K</div>
               <div>Month-to-Key: ${bid.month}</div>
               ${monthDecreased ? '<div style="color: #f39c12; margin-top: 4px;">⚠ Month Decreased</div>' : ''}
-              ${index > 0 ? `<div style="margin-top: 4px; font-size: 10px; color: #ccc;">Previous: M${bidData[index - 1].month}</div>` : ''}
+              ${index > 0 ? `<div style="margin-top: 4px; font-size: 10px; color: #ccc;">Previous: M${dataToUse[index - 1].month}</div>` : ''}
             </div>
           `
           
@@ -495,7 +562,7 @@ const DataGraph: React.FC<DataGraphProps> = ({
         .attr('x', x)
         .attr('y', y - 35)
         .attr('text-anchor', 'middle')
-        .attr('fill', color)
+        .attr('fill', bidColor)
         .attr('font-size', '10px')
         .attr('font-weight', '700')
         .attr('opacity', 0)
@@ -512,7 +579,7 @@ const DataGraph: React.FC<DataGraphProps> = ({
         .attr('x', x)
         .attr('y', y - 15)
         .attr('text-anchor', 'middle')
-        .attr('fill', monthDecreased ? '#d35400' : color)
+        .attr('fill', monthDecreased ? '#d35400' : bidColor)
         .attr('font-size', '9px')
         .attr('font-weight', '700')
         .attr('opacity', 0)
@@ -544,19 +611,25 @@ const DataGraph: React.FC<DataGraphProps> = ({
     })
 
     // Connect bid points with enhanced trajectory visualization
-    if (bidData.length > 1) {
+    if (dataToUse.length > 1) {
       // Create line segments with different styles based on month changes
-      for (let i = 0; i < bidData.length - 1; i++) {
-        const currentBid = bidData[i]
-        const nextBid = bidData[i + 1]
+      for (let i = 0; i < dataToUse.length - 1; i++) {
+        const currentBid = dataToUse[i]
+        const nextBid = dataToUse[i + 1]
         const monthDecreased = nextBid.month < currentBid.month
+        
+        // Determine line color based on agent and showAllBids setting
+        let lineColor = color;
+        if (showAllBids && currentBid.agent) {
+          lineColor = currentBid.agent === 'seller' ? '#e74c3c' : '#4a90e2';
+        }
         
         const lineSegment = chart.append('line')
           .attr('x1', xScale(currentBid.month))
           .attr('y1', yScale(currentBid.price))
           .attr('x2', xScale(nextBid.month))
           .attr('y2', yScale(nextBid.price))
-          .attr('stroke', monthDecreased ? '#e67e22' : color)
+          .attr('stroke', monthDecreased ? '#e67e22' : lineColor)
           .attr('stroke-width', monthDecreased ? 3 : 2)
           .attr('stroke-dasharray', monthDecreased ? '5,3' : 'none')
           .attr('opacity', 0)
@@ -565,15 +638,15 @@ const DataGraph: React.FC<DataGraphProps> = ({
         lineSegment
           .transition()
           .duration(400)
-          .delay(bidData.length * 200 + i * 100)
+          .delay(dataToUse.length * 200 + i * 100)
           .attr('opacity', monthDecreased ? 0.8 : 0.7)
           .ease(d3.easeLinear)
       }
       
       // Add trajectory direction indicators for month changes
-      bidData.forEach((bid, index) => {
+      dataToUse.forEach((bid, index) => {
         if (index > 0) {
-          const prevBid = bidData[index - 1]
+          const prevBid = dataToUse[index - 1]
           const monthDecreased = bid.month < prevBid.month
           
           if (monthDecreased) {
@@ -594,7 +667,7 @@ const DataGraph: React.FC<DataGraphProps> = ({
             indicator
               .transition()
               .duration(300)
-              .delay(bidData.length * 200 + index * 100 + 200)
+              .delay(dataToUse.length * 200 + index * 100 + 200)
               .attr('opacity', 0.8)
           }
         }
@@ -644,7 +717,7 @@ const DataGraph: React.FC<DataGraphProps> = ({
         .ease(d3.easeCubicOut)
     }
 
-  }, [data, color, batnaPoint, batnaColor, sellerBatnaPoint, buyerBatnaPoint, bidData, allRounds, batnaValue, estimatedBatnaValue])
+  }, [data, color, batnaPoint, batnaColor, sellerBatnaPoint, buyerBatnaPoint, bidData, allRounds, batnaValue, estimatedBatnaValue, showAllBids])
 
   return (
     <GraphContainer

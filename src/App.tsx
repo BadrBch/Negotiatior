@@ -1486,6 +1486,7 @@ function App() {
             allRounds={getBidDataForGraphs().allRounds}
             batnaValue={getCurrentBatnaValues()?.sbatna}
             estimatedBatnaValue={getCurrentBatnaValues()?.ebbatna}
+            showAllBids={true}
           />
         </RobotContainer>
       </RobotSection>
@@ -1559,6 +1560,7 @@ function App() {
             allRounds={getBidDataForGraphs().allRounds}
             batnaValue={getCurrentBatnaValues()?.bbatna}
             estimatedBatnaValue={getCurrentBatnaValues()?.esbatna}
+            showAllBids={true}
           />
         </RobotContainer>
       </RobotSection>
