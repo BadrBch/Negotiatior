@@ -901,6 +901,10 @@ function App() {
     // Only show surplus after we have transcript messages (after chat appears)
     if (transcriptMessages.length === 0) return null
     
+    // Check if there's a loading message - don't show surplus during thinking time
+    const hasLoadingMessage = transcriptMessages.some(msg => msg.type === 'loading')
+    if (hasLoadingMessage) return null
+    
     // Get the latest bids
     const sellerSurplus = state.current_seller_bid !== null 
       ? state.current_seller_bid - params.seller_batna 
@@ -919,6 +923,38 @@ function App() {
   const getBidDataForGraphs = () => {
     if (!stepNegotiation) return { sellerBids: [], buyerBids: [], allRounds: [] }
     
+    // Check if there's a loading message - don't show new graph points during thinking time
+    const hasLoadingMessage = transcriptMessages.some(msg => msg.type === 'loading')
+    if (hasLoadingMessage) {
+      // Return data without the latest round (the one being "thought about")
+      const rounds = stepNegotiation.getCurrentRounds()
+      const roundsToShow = rounds.slice(0, -1) // Exclude the latest round
+      
+      const sellerBids: { month: number; price: number; agent: 'seller' | 'buyer'; roundIndex: number }[] = []
+      const buyerBids: { month: number; price: number; agent: 'seller' | 'buyer'; roundIndex: number }[] = []
+      const allRounds: { month: number; price: number; agent: 'seller' | 'buyer'; roundIndex: number }[] = []
+      
+      roundsToShow.forEach((round, index) => {
+        const bidData = {
+          month: round.month, // Use actual month value from bid record
+          price: round.bid,
+          agent: round.agent,
+          roundIndex: index
+        }
+        
+        allRounds.push(bidData)
+        
+        if (round.agent === 'seller') {
+          sellerBids.push(bidData)
+        } else {
+          buyerBids.push(bidData)
+        }
+      })
+      
+      return { sellerBids, buyerBids, allRounds }
+    }
+    
+    // Normal case - show all rounds
     const rounds = stepNegotiation.getCurrentRounds()
     const sellerBids: { month: number; price: number; agent: 'seller' | 'buyer'; roundIndex: number }[] = []
     const buyerBids: { month: number; price: number; agent: 'seller' | 'buyer'; roundIndex: number }[] = []

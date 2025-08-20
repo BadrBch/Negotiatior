@@ -929,6 +929,18 @@ export class StepByStepNegotiation {
     // Seller's initial bid (starting price)
     this.state.current_seller_bid = roundToHalf(this.state.params.starting_price);
     const initialSellerCheck = { valid: true, reason: "not_enforced" };
+    
+    // Generate ONLY V2 verbiage for starting price (first offer)
+    const v2Verbiage = generateV2Verbiage(
+      this.state.params.seller_batna,
+      0, // No buyer bid yet, use 0
+      this.state.current_seller_bid,
+      this.state.rand
+    );
+    
+    // Use only V2 verbiage for starting price
+    const verbiage = v2Verbiage;
+    
     this.state.rounds.push({
       round: this.state.current_round_index,
       agent: "seller",
@@ -940,6 +952,7 @@ export class StepByStepNegotiation {
       },
       batna_constraint_check: initialSellerCheck,
       timestamp: isoNow(),
+      verbiage: verbiage
     });
   }
 
@@ -1399,20 +1412,28 @@ export class StepByStepNegotiation {
   }
 
   /**
-   * Updates the month-to-key value based on seller rule (Case 1 only)
-   * When a new seller bid arrives, calculate percentage change vs previous seller bid
-   * If price goes down by less than 10% (pct_change > -0.10), then m = max(0, m - 1)
-   * Otherwise, m is unchanged
-   * Skip rule on the first seller bid (no previous bid to compare)
+   * Updates the month-to-key value based on seller rule
+   * For first seller bid: If SBID - FirstBid < 20k, 50% chance M=M-1, else 50% chance M=M+1
+   * For subsequent bids: If SBID - BBID < 25k, 50% chance M=M-1, else 50% chance M=M+1
+   * M is clamped between 0 and 12
    */
   private updateMonthToKey(newSellerBid: number): void {
-    // Calculate bid gap: SBID - BBID (or starting_price if no buyer bid)
-    const buyerBid = this.state.current_buyer_bid ?? this.state.params.starting_price;
-    const bid_gap = newSellerBid - buyerBid;
+    let bid_gap: number;
+    let threshold: number;
     
-    // Seller rule: If SBID - BBID < 25k, then m decreases by 1 with 50% probability
-    // Otherwise, m increases by 1 with 50% probability
-    if (bid_gap < 25) {
+    // Check if this is the first seller bid (after starting price)
+    if (this.state.current_buyer_bid === null) {
+      // First seller bid: compare against starting price (FirstBid)
+      bid_gap = newSellerBid - this.state.params.starting_price;
+      threshold = 20; // 20k threshold for first bid
+    } else {
+      // Subsequent bids: compare against buyer bid
+      bid_gap = newSellerBid - this.state.current_buyer_bid;
+      threshold = 25; // 25k threshold for subsequent bids
+    }
+    
+    // Apply the rule: If bid_gap < threshold, 50% chance M=M-1, else 50% chance M=M+1
+    if (bid_gap < threshold) {
       if (this.state.rand() < 0.5) {
         this.state.current_month = Math.max(0, this.state.current_month - 1);
       }
@@ -1470,13 +1491,22 @@ export function runSingleNegotiation(params: NegotiationParameters): SingleRunRe
   
   // Helper function to update month-to-key value based on seller rule
   const updateMonthToKey = (next_seller_bid: number) => {
-    // Calculate bid gap: SBID - BBID (or starting_price if no buyer bid)
-    const buyerBid = current_buyer_bid ?? params.starting_price;
-    const bid_gap = next_seller_bid - buyerBid;
+    let bid_gap: number;
+    let threshold: number;
     
-    // Seller rule: If SBID - BBID < 25k, then m decreases by 1 with 50% probability
-    // Otherwise, m increases by 1 with 50% probability
-    if (bid_gap < 25) {
+    // Check if this is the first seller bid (after starting price)
+    if (current_buyer_bid === null) {
+      // First seller bid: compare against starting price (FirstBid)
+      bid_gap = next_seller_bid - params.starting_price;
+      threshold = 20; // 20k threshold for first bid
+    } else {
+      // Subsequent bids: compare against buyer bid
+      bid_gap = next_seller_bid - current_buyer_bid;
+      threshold = 25; // 25k threshold for subsequent bids
+    }
+    
+    // Apply the rule: If bid_gap < threshold, 50% chance M=M-1, else 50% chance M=M+1
+    if (bid_gap < threshold) {
       if (rand() < 0.5) {
         current_month = Math.max(0, current_month - 1);
       }

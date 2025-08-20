@@ -107,12 +107,74 @@ const DataGraph: React.FC<DataGraphProps> = ({
     const chartWidth = width - margin.left - margin.right
     const chartHeight = height - margin.top - margin.bottom
 
-    // Create zoom behavior with better scale limits to prevent unit scale bugs
+    // Create zoom behavior
     const zoom = d3.zoom()
-      .scaleExtent([0.8, 3]) // Reduced scale range to prevent extreme zooming
+      .scaleExtent([0.5, 5])
       .on('zoom', (event) => {
         const { transform } = event
         chart.attr('transform', `translate(${margin.left}, ${margin.top}) ${transform}`)
+        
+        // Update axes with zoom transform
+        const newXScale = transform.rescaleX(xScale)
+        const newYScale = transform.rescaleY(yScale)
+        
+        // Update axis ticks
+        chart.selectAll('.x-axis-tick').remove()
+        chart.selectAll('.y-axis-tick').remove()
+        
+        // Redraw x-axis ticks
+        const xTicks = newXScale.ticks(8)
+        xTicks.forEach(tick => {
+          const tickX = newXScale(tick)
+          if (tickX >= 0 && tickX <= chartWidth) {
+            chart.append('line')
+              .attr('class', 'x-axis-tick')
+              .attr('x1', tickX)
+              .attr('y1', chartHeight)
+              .attr('x2', tickX)
+              .attr('y2', chartHeight + 5)
+              .attr('stroke', '#666')
+              .attr('stroke-width', 1)
+              .attr('opacity', 0.7)
+            
+            chart.append('text')
+              .attr('class', 'x-axis-tick')
+              .attr('x', tickX)
+              .attr('y', chartHeight + 25)
+              .attr('text-anchor', 'middle')
+              .attr('fill', '#555')
+              .attr('font-size', '11px')
+              .attr('font-weight', '600')
+              .text(`M${Math.round(tick)}`)
+          }
+        })
+        
+        // Redraw y-axis ticks
+        const yTicks = newYScale.ticks(6)
+        yTicks.forEach(tick => {
+          const tickY = newYScale(tick)
+          if (tickY >= 0 && tickY <= chartHeight) {
+            chart.append('line')
+              .attr('class', 'y-axis-tick')
+              .attr('x1', -5)
+              .attr('y1', tickY)
+              .attr('x2', 0)
+              .attr('y2', tickY)
+              .attr('stroke', '#666')
+              .attr('stroke-width', 1)
+              .attr('opacity', 0.7)
+            
+            chart.append('text')
+              .attr('class', 'y-axis-tick')
+              .attr('x', -12)
+              .attr('y', tickY + 4)
+              .attr('text-anchor', 'end')
+              .attr('fill', '#555')
+              .attr('font-size', '12px')
+              .attr('font-weight', '500')
+              .text(`${Math.round(tick)}`)
+          }
+        })
       })
 
     // Apply zoom behavior to svg
@@ -531,16 +593,9 @@ const DataGraph: React.FC<DataGraphProps> = ({
       .attr('font-weight', '600')
       .text('Price ($1000)')
       
-    // Add Y-axis tick labels with consistent intervals
-    const yRange = yMax - yMin
-    let yTickStep = 25
-    if (yRange > 500) yTickStep = 50
-    if (yRange > 1000) yTickStep = 100
-    if (yRange < 200) yTickStep = 10
-    if (yRange < 100) yTickStep = 5
-    
-    const yTickStart = Math.ceil(yMin / yTickStep) * yTickStep
-    for (let i = yTickStart; i <= yMax; i += yTickStep) {
+    // Add Y-axis tick labels
+    const yTickStep = Math.max(50, Math.ceil((yMax - yMin) / 10));
+    for (let i = Math.ceil(yMin / yTickStep) * yTickStep; i <= yMax; i += yTickStep) {
       const tickY = yScale(i);
       
       // Add tick mark
