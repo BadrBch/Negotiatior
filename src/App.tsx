@@ -878,6 +878,13 @@ function App() {
     }
   }
 
+  // Get starting price for display
+  const getStartingPrice = () => {
+    if (!stepNegotiation) return undefined
+    const params = stepNegotiation.getState().params
+    return params.starting_price
+  }
+
   // Get current month-to-key value
   const getCurrentMonthToKey = () => {
     if (!stepNegotiation) return monthToKey // Return initialization value if no negotiation
@@ -1487,6 +1494,7 @@ function App() {
             estimatedBatnaValue={getCurrentBatnaValues()?.ebbatna}
             showAllBids={true}
             graphType="seller"
+            startingPrice={getStartingPrice()}
           />
         </RobotContainer>
       </RobotSection>
@@ -1562,6 +1570,7 @@ function App() {
             estimatedBatnaValue={getCurrentBatnaValues()?.esbatna}
             showAllBids={true}
             graphType="buyer"
+            startingPrice={getStartingPrice()}
           />
         </RobotContainer>
       </RobotSection>
