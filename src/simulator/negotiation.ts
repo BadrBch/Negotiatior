@@ -1406,35 +1406,39 @@ export class StepByStepNegotiation {
    * Skip rule on the first seller bid (no previous bid to compare)
    */
   private updateMonthToKey(newSellerBid: number): void {
-    // Skip rule on first seller bid (no previous bid to compare)
-    if (this.state.previous_seller_bid === null) {
-      return;
-    }
-
-    // Calculate percentage change: (new - old) / old
-    const pct_change_value = pctChange(newSellerBid, this.state.previous_seller_bid);
+    // Calculate bid gap: SBID - BBID (or starting_price if no buyer bid)
+    const buyerBid = this.state.current_buyer_bid ?? this.state.params.starting_price;
+    const bid_gap = newSellerBid - buyerBid;
     
-    // Seller rule: If |percentage_change| < 0.20, then month_to_key decreases by 1
-    if (Math.abs(pct_change_value) < 0.20) {
-      this.state.current_month = Math.max(0, this.state.current_month - 1);
+    // Seller rule: If SBID - BBID < 25k, then m decreases by 1 with 50% probability
+    // Otherwise, m increases by 1 with 50% probability
+    if (bid_gap < 25) {
+      if (this.state.rand() < 0.5) {
+        this.state.current_month = Math.max(0, this.state.current_month - 1);
+      }
+    } else {
+      if (this.state.rand() < 0.5) {
+        this.state.current_month = Math.min(16, this.state.current_month + 1);
+      }
     }
-    // Otherwise, m is unchanged (no action needed)
   }
 
   private updateMonthToKeyForBuyer(newBuyerBid: number): void {
-    // Skip rule on first buyer bid (no previous bid to compare)
-    if (this.state.previous_buyer_bid === null) {
-      return;
-    }
-
-    // Calculate percentage change: (new - old) / old
-    const pct_change_value = pctChange(newBuyerBid, this.state.previous_buyer_bid);
+    // Calculate bid gap: seller_bid - BBID (or starting_price if no seller bid)
+    const sellerBid = this.state.current_seller_bid ?? this.state.params.starting_price;
+    const bid_gap = sellerBid - newBuyerBid;
     
-    // Buyer rule: If |percentage_change| > 0.20, then month_to_key decreases by 1
-    if (Math.abs(pct_change_value) > 0.20) {
-      this.state.current_month = Math.max(0, this.state.current_month - 1);
+    // Buyer rule: If seller_bid - BBID < 20k, then m decreases by 1 with 50% probability
+    // Otherwise, m increases by 1 with 50% probability
+    if (bid_gap < 20) {
+      if (this.state.rand() < 0.5) {
+        this.state.current_month = Math.max(0, this.state.current_month - 1);
+      }
+    } else {
+      if (this.state.rand() < 0.5) {
+        this.state.current_month = Math.min(16, this.state.current_month + 1);
+      }
     }
-    // Otherwise, m is unchanged (no action needed)
   }
 }
 
@@ -1466,34 +1470,40 @@ export function runSingleNegotiation(params: NegotiationParameters): SingleRunRe
   
   // Helper function to update month-to-key value based on seller rule
   const updateMonthToKey = (next_seller_bid: number) => {
-    if (previous_seller_bid === null) {
-      return; // No previous bid to compare against
-    }
+    // Calculate bid gap: SBID - BBID (or starting_price if no buyer bid)
+    const buyerBid = current_buyer_bid ?? params.starting_price;
+    const bid_gap = next_seller_bid - buyerBid;
     
-    // Calculate percentage change: (new - old) / old
-    const pct_change_value = pctChange(next_seller_bid, previous_seller_bid);
-    
-    // Seller rule: If |percentage_change| < 0.20, then month_to_key decreases by 1
-    if (Math.abs(pct_change_value) < 0.20) {
-      current_month = Math.max(0, current_month - 1);
+    // Seller rule: If SBID - BBID < 25k, then m decreases by 1 with 50% probability
+    // Otherwise, m increases by 1 with 50% probability
+    if (bid_gap < 25) {
+      if (rand() < 0.5) {
+        current_month = Math.max(0, current_month - 1);
+      }
+    } else {
+      if (rand() < 0.5) {
+        current_month = Math.min(16, current_month + 1);
+      }
     }
-    // Otherwise, m is unchanged (no action needed)
   };
 
   // Helper function to update month-to-key value based on buyer rule
   const updateMonthToKeyForBuyer = (next_buyer_bid: number) => {
-    if (previous_buyer_bid === null) {
-      return; // No previous bid to compare against
-    }
+    // Calculate bid gap: seller_bid - BBID (or starting_price if no seller bid)
+    const sellerBid = current_seller_bid ?? params.starting_price;
+    const bid_gap = sellerBid - next_buyer_bid;
     
-    // Calculate percentage change: (new - old) / old
-    const pct_change_value = pctChange(next_buyer_bid, previous_buyer_bid);
-    
-    // Buyer rule: If |percentage_change| > 0.20, then month_to_key decreases by 1
-    if (Math.abs(pct_change_value) > 0.20) {
-      current_month = Math.max(0, current_month - 1);
+    // Buyer rule: If seller_bid - BBID < 20k, then m decreases by 1 with 50% probability
+    // Otherwise, m increases by 1 with 50% probability
+    if (bid_gap < 20) {
+      if (rand() < 0.5) {
+        current_month = Math.max(0, current_month - 1);
+      }
+    } else {
+      if (rand() < 0.5) {
+        current_month = Math.min(16, current_month + 1);
+      }
     }
-    // Otherwise, m is unchanged (no action needed)
   };
 
   // Negotiation styles
