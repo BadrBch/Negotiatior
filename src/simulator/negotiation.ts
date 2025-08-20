@@ -119,6 +119,16 @@ function getPersonalityAdjustment(profile: BuyerProfile | SellerProfile): { x?: 
   }
 }
 
+// Helper function to get seller BATNA multiplier for SBID upper bound formula
+function getSellerBatnaMultiplier(profile: SellerProfile): number {
+  switch (profile) {
+    case "bulldozer": return 0.1;
+    case "diplomat": return 0.02;
+    case "chameleon": return 0.05;
+    default: return 0.02;
+  }
+}
+
 // Helper function to get personality bid selection ranges
 function getPersonalityRange(profile: BuyerProfile | SellerProfile, agent: "buyer" | "seller"): { min: number; max: number } {
   if (agent === "buyer") {
@@ -1093,6 +1103,7 @@ export class StepByStepNegotiation {
     const seller_profile = this.state.params.seller_profile ?? "diplomat";
     const adjustment = getPersonalityAdjustment(seller_profile);
     const personalityRange = getPersonalityRange(seller_profile, "seller");
+    const yMultiplier = getSellerBatnaMultiplier(seller_profile);
     
     // Update estimated BATNAs using bid formulas (reverse-engineered)
     // From SBID formula: if seller bid is low, their BATNA must be lower
@@ -1104,9 +1115,10 @@ export class StepByStepNegotiation {
     let sellerRangeLower: number;
     let sellerRangeUpper: number;
     
-    // SBID = [max(BBID, BBID, SBATNA), min(EBBATNA*(1.02), SBID, starting_price)]
+    // SBID = [max(BBID, BBID, SBATNA), min(EBBATNA*(1+Y), SBID, starting_price)]
+    // Y = 0.1 for bulldozer, 0.02 for diplomat, 0.05 for chameleon
     sellerRangeLower = Math.max(this.state.current_buyer_bid as number, this.state.current_buyer_bid as number, this.state.params.seller_batna);
-    sellerRangeUpper = Math.min(this.state.params.estimated_buyer_batna * 1.02, this.state.current_seller_bid as number, this.state.params.starting_price);
+    sellerRangeUpper = Math.min(this.state.params.estimated_buyer_batna * (1 + yMultiplier), this.state.current_seller_bid as number, this.state.params.starting_price);
     
     // Ensure valid range
     if (sellerRangeUpper < sellerRangeLower) {
@@ -1245,6 +1257,9 @@ export class StepByStepNegotiation {
     
     this.state.current_round_index += 1;
     this.state.current_buyer_bid = next_buyer_bid;
+    
+    // Update month-to-key based on buyer bid change
+    this.updateMonthToKeyForBuyer(next_buyer_bid);
     
     // Generate both V1 and V2 verbiage for buyer
     const buyerV1Verbiage = generateBuyerVerbiage(
@@ -1399,8 +1414,24 @@ export class StepByStepNegotiation {
     // Calculate percentage change: (new - old) / old
     const pct_change_value = pctChange(newSellerBid, this.state.previous_seller_bid);
     
-    // Seller rule (Case 1): If price goes down by less than 10% (pct_change > -0.10), then m = max(0, m - 1)
-    if (pct_change_value > -0.10) {
+    // Seller rule: If |percentage_change| < 0.20, then month_to_key decreases by 1
+    if (Math.abs(pct_change_value) < 0.20) {
+      this.state.current_month = Math.max(0, this.state.current_month - 1);
+    }
+    // Otherwise, m is unchanged (no action needed)
+  }
+
+  private updateMonthToKeyForBuyer(newBuyerBid: number): void {
+    // Skip rule on first buyer bid (no previous bid to compare)
+    if (this.state.previous_buyer_bid === null) {
+      return;
+    }
+
+    // Calculate percentage change: (new - old) / old
+    const pct_change_value = pctChange(newBuyerBid, this.state.previous_buyer_bid);
+    
+    // Buyer rule: If |percentage_change| > 0.20, then month_to_key decreases by 1
+    if (Math.abs(pct_change_value) > 0.20) {
       this.state.current_month = Math.max(0, this.state.current_month - 1);
     }
     // Otherwise, m is unchanged (no action needed)
@@ -1430,6 +1461,7 @@ export function runSingleNegotiation(params: NegotiationParameters): SingleRunRe
   
   // Month-to-key tracking variables
   let previous_seller_bid: number | null = null;
+  let previous_buyer_bid: number | null = null;
   let current_month: number = Math.max(0, Math.min(16, params.month_to_key ?? 12)); // Initialize month-to-key from params
   
   // Helper function to update month-to-key value based on seller rule
@@ -1438,11 +1470,27 @@ export function runSingleNegotiation(params: NegotiationParameters): SingleRunRe
       return; // No previous bid to compare against
     }
     
-    // Calculate percentage change
-    const pct_change_value = (next_seller_bid - previous_seller_bid) / previous_seller_bid;
+    // Calculate percentage change: (new - old) / old
+    const pct_change_value = pctChange(next_seller_bid, previous_seller_bid);
     
-    // Seller rule: If price goes down by less than 10% (pct_change > -0.10), then m = max(0, m - 1)
-    if (pct_change_value > -0.10) {
+    // Seller rule: If |percentage_change| < 0.20, then month_to_key decreases by 1
+    if (Math.abs(pct_change_value) < 0.20) {
+      current_month = Math.max(0, current_month - 1);
+    }
+    // Otherwise, m is unchanged (no action needed)
+  };
+
+  // Helper function to update month-to-key value based on buyer rule
+  const updateMonthToKeyForBuyer = (next_buyer_bid: number) => {
+    if (previous_buyer_bid === null) {
+      return; // No previous bid to compare against
+    }
+    
+    // Calculate percentage change: (new - old) / old
+    const pct_change_value = pctChange(next_buyer_bid, previous_buyer_bid);
+    
+    // Buyer rule: If |percentage_change| > 0.20, then month_to_key decreases by 1
+    if (Math.abs(pct_change_value) > 0.20) {
       current_month = Math.max(0, current_month - 1);
     }
     // Otherwise, m is unchanged (no action needed)
@@ -1654,10 +1702,12 @@ export function runSingleNegotiation(params: NegotiationParameters): SingleRunRe
     // Calculate seller bid range based on ZOPA
     let sellerRangeLower: number;
     let sellerRangeUpper: number;
+    const yMultiplier = getSellerBatnaMultiplier(seller_profile);
     
-    // SBID = [max(BBID, BBID, SBATNA), min(EBBATNA*(1.02), SBID, starting_price)]
+    // SBID = [max(BBID, BBID, SBATNA), min(EBBATNA*(1+Y), SBID, starting_price)]
+    // Y = 0.1 for bulldozer, 0.02 for diplomat, 0.05 for chameleon
     sellerRangeLower = Math.max(current_buyer_bid as number, current_buyer_bid as number, params.seller_batna);
-    sellerRangeUpper = Math.min(params.estimated_buyer_batna * 1.02, current_seller_bid as number, params.starting_price);
+    sellerRangeUpper = Math.min(params.estimated_buyer_batna * (1 + yMultiplier), current_seller_bid as number, params.starting_price);
     
     // Ensure valid range
     if (sellerRangeUpper < sellerRangeLower) {
@@ -1829,7 +1879,13 @@ export function runSingleNegotiation(params: NegotiationParameters): SingleRunRe
       timestamp: isoNow(),
       verbiage: buyerVerbiage,
     });
+    
+    // Update previous buyer bid before setting new one
+    previous_buyer_bid = current_buyer_bid;
     current_buyer_bid = next_buyer_bid;
+    
+    // Update month-to-key based on buyer bid change
+    updateMonthToKeyForBuyer(next_buyer_bid);
     
     // Check if bids haven't changed (prevent infinite loops)
     if (current_seller_bid === prev_seller_bid && current_buyer_bid === prev_buyer_bid) {
@@ -1999,6 +2055,9 @@ export function runMultipleSimulations(count: number): MultipleRunResult {
     const buyerProfiles = ["bulldozer", "diplomat", "chameleon"];
     const sellerProfiles = ["bulldozer", "diplomat", "chameleon"];
     
+    // Randomize starting month_to_key (0-16)
+    const randomMonthToKey = Math.floor(Math.random() * 17); // 0 to 16 inclusive
+    
     const res = runSingleNegotiation({
       starting_price: Number(sp.toFixed(2)),
       buyer_batna: Number(buyer_batna.toFixed(2)),
@@ -2009,6 +2068,7 @@ export function runMultipleSimulations(count: number): MultipleRunResult {
       random_seed: null,
       buyer_profile: buyerProfiles[Math.floor(Math.random() * buyerProfiles.length)] as BuyerProfile,
       seller_profile: sellerProfiles[Math.floor(Math.random() * sellerProfiles.length)] as SellerProfile,
+      month_to_key: randomMonthToKey,
     });
 
     allResults.push(res);
@@ -2053,7 +2113,9 @@ export function runMultipleSimulations(count: number): MultipleRunResult {
   for (let round = 1; round <= maxRounds; round++) {
     bidHeaders.push(`round_${round}_agent`);
     bidHeaders.push(`round_${round}_bid`);
-    bidHeaders.push(`round_${round}_verbiage`);
+    bidHeaders.push(`round_${round}_month_to_key`);
+    bidHeaders.push(`round_${round}_v1_number`);
+    bidHeaders.push(`round_${round}_v2_number`);
   }
   
   const header = [...baseHeader, ...bidHeaders];
@@ -2089,26 +2151,38 @@ export function runMultipleSimulations(count: number): MultipleRunResult {
       if (roundData) {
         bidData.push(roundData.agent);
         bidData.push(roundData.bid.toFixed(2));
-        // For CSV export: Show only sentence numbers for all agents
-        let csvVerbiage = "";
+        bidData.push(String(roundData.month)); // month_to_key for this round
+        
+        // Extract V1 and V2 sentence numbers from verbiage
+        let v1Number = "";
+        let v2Number = "";
+        
         if (roundData.verbiage) {
           if (roundData.agent === "seller") {
-            // Extract V2 number from combined V1+V2 verbiage
-            // V2 sentences are numbered 100-150 (soft) or 151-200 (harsh)
-            const v2Match = roundData.verbiage.match(/\n(\d{3}):/);
-            csvVerbiage = v2Match ? v2Match[1] : "";
+            // For sellers: V1 sentences are 0-100, V2 sentences are 100-200
+            // Extract both V1 and V2 numbers from combined verbiage
+            const v1Match = roundData.verbiage.match(/^(\d{1,3}):/); // First number at start
+            const v2Match = roundData.verbiage.match(/\n(\d{3}):/); // Second number after newline
+            v1Number = v1Match ? v1Match[1] : "";
+            v2Number = v2Match ? v2Match[1] : "";
           } else {
-            // For buyers, extract V2 number from combined V1+V2 verbiage
-            // Buyer V2 sentences are numbered 200-250 (soft) or 251-300 (harsh)
-            const buyerV2Match = roundData.verbiage.match(/\n(\d{3}):/);
-            csvVerbiage = buyerV2Match ? buyerV2Match[1] : "";
+            // For buyers: extract V1 and V2 numbers
+            // Buyer V1 sentences are 0-100, Buyer V2 sentences are 200-300
+            const v1Match = roundData.verbiage.match(/^(\d{1,3}):/); // First number at start
+            const v2Match = roundData.verbiage.match(/\n(\d{3}):/); // Second number after newline
+            v1Number = v1Match ? v1Match[1] : "";
+            v2Number = v2Match ? v2Match[1] : "";
           }
         }
-        bidData.push(csvVerbiage);
+        
+        bidData.push(v1Number);
+        bidData.push(v2Number);
       } else {
         bidData.push("");  // Empty agent
         bidData.push("");  // Empty bid
-        bidData.push("");  // Empty verbiage
+        bidData.push("");  // Empty month_to_key
+        bidData.push("");  // Empty v1_number
+        bidData.push("");  // Empty v2_number
       }
     }
     
