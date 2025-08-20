@@ -850,8 +850,8 @@ function App() {
   const data1 = [10, 20, 30, 40, 25, 35]
   const data2 = [15, 25, 35, 20, 45, 30]
 
-  const leftRobotTabs = ['Surplus', 'Progress', 'SBATNA', 'EBBATNA']
-  const rightRobotTabs = ['Surplus', 'Progress', 'BBATNA', 'ESBATNA']
+  const leftRobotTabs = ['Surplus', 'Personality', 'SBATNA', 'EBBATNA']
+  const rightRobotTabs = ['Surplus', 'Personality', 'BBATNA', 'ESBATNA']
 
   // Negotiation modal state
   const [showNegotiateModal, setShowNegotiateModal] = useState<boolean>(false)
@@ -905,17 +905,45 @@ function App() {
     const hasLoadingMessage = transcriptMessages.some(msg => msg.type === 'loading')
     if (hasLoadingMessage) return null
     
-    // Get the latest bids
-    const sellerSurplus = state.current_seller_bid !== null 
-      ? state.current_seller_bid - params.seller_batna 
+    // Calculate surplus values using last bid from either party
+    // Buyer surplus = BBATNA - Last bid (from most recent round)
+    // Seller surplus = Last bid (from most recent round) - SBATNA
+    
+    // Determine the last (most recent) bid from either party
+    const rounds = state.rounds
+    let lastBid: number | null = null
+    
+    if (rounds.length > 0) {
+      // Get the most recent round's bid
+      const lastRound = rounds[rounds.length - 1]
+      lastBid = lastRound.bid
+    } else if (state.current_seller_bid !== null) {
+      // Fallback to current seller bid if no rounds yet
+      lastBid = state.current_seller_bid
+    }
+    
+    const sellerSurplus = lastBid !== null 
+      ? lastBid - params.seller_batna
       : 0
-    const buyerSurplus = state.current_buyer_bid !== null 
-      ? params.buyer_batna - state.current_buyer_bid 
+    const buyerSurplus = lastBid !== null 
+      ? params.buyer_batna - lastBid
       : 0
     
     return {
       sellerSurplus,
       buyerSurplus
+    }
+  }
+
+  // Get current personality values for display
+  const getCurrentPersonalityValues = () => {
+    if (!stepNegotiation) return null
+    const state = stepNegotiation.getState()
+    const params = state.params
+    
+    return {
+      sellerPersonality: params.seller_profile || 'diplomat',
+      buyerPersonality: params.buyer_profile || 'diplomat'
     }
   }
 
@@ -1441,9 +1469,12 @@ function App() {
       <LeftRobotLeftTabs>
         {leftRobotTabs.slice(0, 2).map((tab, index) => {
           const surplusValues = getCurrentSurplusValues()
+          const personalityValues = getCurrentPersonalityValues()
           let value = ''
           if (surplusValues && tab === 'Surplus') {
             value = `$${surplusValues.sellerSurplus.toFixed(0)}K`
+          } else if (personalityValues && tab === 'Personality') {
+            value = personalityValues.sellerPersonality.charAt(0).toUpperCase() + personalityValues.sellerPersonality.slice(1)
           }
           return (
             <Tab
@@ -1540,9 +1571,12 @@ function App() {
       <RightRobotLeftTabs>
         {rightRobotTabs.slice(0, 2).map((tab, index) => {
           const surplusValues = getCurrentSurplusValues()
+          const personalityValues = getCurrentPersonalityValues()
           let value = ''
           if (surplusValues && tab === 'Surplus') {
             value = `$${surplusValues.buyerSurplus.toFixed(0)}K`
+          } else if (personalityValues && tab === 'Personality') {
+            value = personalityValues.buyerPersonality.charAt(0).toUpperCase() + personalityValues.buyerPersonality.slice(1)
           }
           return (
             <Tab

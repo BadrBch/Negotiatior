@@ -390,111 +390,110 @@ const BUYER_VERBIAGE_SENTENCES = {
 const BUYER_V2_VERBIAGE_SENTENCES = {
   // Soft Sentences (200-250): When Buyer V2 = FALSE
   soft: [
-    "200: Would this price work for you?",
-    "201: Is this pricing acceptable?",
-    "202: Does this amount seem fair to you?",
-    "203: Would you be okay with this price?",
-    "204: Is this cost reasonable for you?",
-    "205: Does this pricing make sense?",
-    "206: Would this amount be agreeable?",
-    "207: Is this price point workable for you?",
-    "208: Does this cost fit your expectations?",
-    "209: Would you accept this pricing?",
-    "210: Is this amount suitable for you?",
-    "211: Does this price seem right?",
-    "212: Would this cost be acceptable?",
-    "213: Is this pricing fair in your view?",
-    "214: Does this amount work for you?",
-    "215: Would you go with this price?",
-    "216: Is this cost something you'd accept?",
-    "217: Does this pricing sound good?",
-    "218: Would this amount be fine?",
-    "219: Is this price reasonable to you?",
-    "220: Does this cost meet your needs?",
-    "221: Would you agree to this pricing?",
-    "222: Is this amount good for you?",
-    "223: Does this price work from your end?",
-    "224: Would this cost be suitable?",
-    "225: Is this pricing what you expected?",
-    "226: Does this amount seem fair?",
-    "227: Would you be comfortable with this price?",
-    "228: Is this cost acceptable to you?",
-    "229: Does this pricing look right?",
-    "230: Would this amount satisfy you?",
-    "231: Is this price good enough?",
-    "232: Does this cost work for your needs?",
-    "233: Would you find this pricing fair?",
-    "234: Is this amount reasonable?",
-    "235: Does this price fit your budget?",
-    "236: Would this cost be appropriate?",
-    "237: Is this pricing agreeable to you?",
-    "238: Does this amount sound fair?",
-    "239: Would you accept this price point?",
-    "240: Is this cost within your range?",
-    "241: Does this pricing work for you?",
-    "242: Would this amount be okay?",
-    "243: Is this price fair to you?",
-    "244: Does this cost seem right?",
-    "245: Would you go for this pricing?",
-    "246: Is this amount acceptable?",
-    "247: Does this price meet your standards?",
-    "248: Would this cost work out?",
-    "249: Is this pricing suitable for you?",
-    "250: Does this amount close it for you?"
+    "101: Is this pricing acceptable?",
+    "102: Does this amount seem fair to you?",
+    "103: Would you be okay with this price?",
+    "104: Is this cost reasonable for you?",
+    "105: Does this pricing make sense?",
+    "106: Would this amount be agreeable?",
+    "107: Is this price point workable for you?",
+    "108: Does this cost fit your expectations?",
+    "109: Would you accept this pricing?",
+    "110: Is this amount suitable for you?",
+    "111: Does this price seem right?",
+    "112: Would this cost be acceptable?",
+    "113: Is this pricing fair in your view?",
+    "114: Does this amount work for you?",
+    "115: Would you go with this price?",
+    "116: Is this cost something you'd accept?",
+    "117: Does this pricing sound good?",
+    "118: Would this amount be fine?",
+    "119: Is this price reasonable to you?",
+    "120: Does this cost meet your needs?",
+    "121: Would you agree to this pricing?",
+    "122: Is this amount good for you?",
+    "123: Does this price work from your end?",
+    "124: Would this cost be suitable?",
+    "125: Is this pricing what you expected?",
+    "126: Does this amount seem fair?",
+    "127: Would you be comfortable with this price?",
+    "128: Is this cost acceptable to you?",
+    "129: Does this pricing look right?",
+    "130: Would this amount satisfy you?",
+    "131: Is this price good enough?",
+    "132: Does this cost work for your needs?",
+    "133: Would you find this pricing fair?",
+    "134: Is this amount reasonable?",
+    "135: Does this price fit your budget?",
+    "136: Would this cost be appropriate?",
+    "137: Is this pricing agreeable to you?",
+    "138: Does this amount sound fair?",
+    "139: Would you accept this price point?",
+    "140: Is this cost within your range?",
+    "141: Does this pricing work for you?",
+    "142: Would this amount be okay?",
+    "143: Is this price fair to you?",
+    "144: Does this cost seem right?",
+    "145: Would you go for this pricing?",
+    "146: Is this amount acceptable?",
+    "147: Does this price meet your standards?",
+    "148: Would this cost work out?",
+    "149: Is this pricing suitable for you?",
+    "150: Does this amount close it for you?"
   ],
   
   // Harsh Sentences (251-300): When Buyer V2 = TRUE
   harsh: [
-    "251: You need to take this price now or lose the deal.",
-    "252: This is my final offer - accept it or we're done.",
-    "253: I won't go higher than this - take it or leave it.",
-    "254: This price is non-negotiable - yes or no?",
-    "255: Accept this offer or I'm walking away.",
-    "256: This is as good as it gets - what's it going to be?",
-    "257: I'm not budging on this price - decide now.",
-    "258: Take this deal or watch it disappear.",
-    "259: This is your last chance at this price.",
-    "260: Accept now or lose this opportunity forever.",
-    "261: I won't offer this price again - decide.",
-    "262: This deal expires if you don't take it now.",
-    "263: Stop wasting time - accept this price.",
-    "264: This is my bottom line - take it or not.",
-    "265: You'll regret passing on this price.",
-    "266: This offer won't be available tomorrow.",
-    "267: Accept this price or find someone else.",
-    "268: I'm done negotiating - this is the price.",
-    "269: Take this deal before I change my mind.",
-    "270: This price is firm - no more discussion.",
-    "271: Accept this or lose the deal entirely.",
-    "272: This is it - yes or no to this price?",
-    "273: You won't get this price anywhere else.",
-    "274: Take this offer or we're finished here.",
-    "275: This price stands - accept or walk away.",
-    "276: I'm not moving from this price - decide.",
-    "277: This is your final opportunity at this price.",
-    "278: Accept this deal or it's over.",
-    "279: This price is as low as I go - period.",
-    "280: Take this offer or lose it completely.",
-    "281: This is my last and best price.",
-    "282: Accept this or I'm done dealing with you.",
-    "283: This price won't last - decide quickly.",
-    "284: Take this deal or forget about it.",
-    "285: This is the end of negotiations - accept or not.",
-    "286: You're crazy not to take this price.",
-    "287: This offer disappears if you say no.",
-    "288: Accept this price or we're through.",
-    "289: This is my final position - take it.",
-    "290: You'll never see this price again - decide.",
-    "291: Accept this or miss out completely.",
-    "292: This price is set in stone - yes or no?",
-    "293: Take this deal or lose everything.",
-    "294: This is it - no more chances at this price.",
-    "295: Accept this offer or it's gone forever.",
-    "296: This price is final - what's your answer?",
-    "297: Take this deal or watch it vanish.",
-    "298: This is your moment - accept or lose out.",
-    "299: This price ends today - decide now.",
-    "300: Accept this or never get another chance."
+    "151: You need to take this price now or lose the deal.",
+    "152: This is my final offer - accept it or we're done.",
+    "153: I won't go higher than this - take it or leave it.",
+    "154: This price is non-negotiable - yes or no?",
+    "155: Accept this offer or I'm walking away.",
+    "156: This is as good as it gets - what's it going to be?",
+    "157: I'm not budging on this price - decide now.",
+    "158: Take this deal or watch it disappear.",
+    "159: This is your last chance at this price.",
+    "160: Accept now or lose this opportunity forever.",
+    "161: I won't offer this price again - decide.",
+    "162: This deal expires if you don't take it now.",
+    "163: Stop wasting time - accept this price.",
+    "164: This is my bottom line - take it or not.",
+    "165: You'll regret passing on this price.",
+    "166: This offer won't be available tomorrow.",
+    "167: Accept this price or find someone else.",
+    "168: I'm done negotiating - this is the price.",
+    "169: Take this deal before I change my mind.",
+    "170: This price is firm - no more discussion.",
+    "171: Accept this or lose the deal entirely.",
+    "172: This is it - yes or no to this price?",
+    "173: You won't get this price anywhere else.",
+    "174: Take this offer or we're finished here.",
+    "175: This price stands - accept or walk away.",
+    "176: I'm not moving from this price - decide.",
+    "177: This is your final opportunity at this price.",
+    "178: Accept this deal or it's over.",
+    "179: This price is as low as I go - period.",
+    "180: Take this offer or lose it completely.",
+    "181: This is my last and best price.",
+    "182: Accept this or I'm done dealing with you.",
+    "183: This price won't last - decide quickly.",
+    "184: Take this deal or forget about it.",
+    "185: This is the end of negotiations - accept or not.",
+    "186: You're crazy not to take this price.",
+    "187: This offer disappears if you say no.",
+    "188: Accept this price or we're through.",
+    "189: This is my final position - take it.",
+    "190: You'll never see this price again - decide.",
+    "191: Accept this or miss out completely.",
+    "192: This price is set in stone - yes or no?",
+    "193: Take this deal or lose everything.",
+    "194: This is it - no more chances at this price.",
+    "195: Accept this offer or it's gone forever.",
+    "196: This price is final - what's your answer?",
+    "197: Take this deal or watch it vanish.",
+    "198: This is your moment - accept or lose out.",
+    "199: This price ends today - decide now.",
+    "200: Accept this or never get another chance."
   ]
 };
 
@@ -1336,6 +1335,9 @@ export class StepByStepNegotiation {
     let total_surplus = 0;
     let deal_feasible_flag = false;
     if (this.state.final_price != null) {
+      // Updated surplus calculation: use final_price as the "last bid"
+      // Buyer surplus = BBATNA - Last bid
+      // Seller surplus = Last bid - SBATNA
       seller_surplus = Number((this.state.final_price - this.state.params.seller_batna).toFixed(2));
       buyer_surplus = Number((this.state.params.buyer_batna - this.state.final_price).toFixed(2));
       total_surplus = Number((seller_surplus + buyer_surplus).toFixed(2));
@@ -1596,6 +1598,18 @@ export function runSingleNegotiation(params: NegotiationParameters): SingleRunRe
   current_seller_bid = roundToHalf(params.starting_price);
   previous_seller_bid = current_seller_bid; // Set initial previous bid for month tracking
   const initialSellerCheck = { valid: true, reason: "not_enforced" };
+  
+  // Generate ONLY V2 verbiage for starting price (first offer) - matches StepByStepNegotiation
+  const initialV2Verbiage = generateV2Verbiage(
+    params.seller_batna,
+    0, // No buyer bid yet, use 0
+    current_seller_bid,
+    rand
+  );
+  
+  // Use only V2 verbiage for starting price
+  const initialVerbiage = initialV2Verbiage;
+  
   rounds.push({
     round: current_round_index,
     agent: "seller",
@@ -1604,6 +1618,7 @@ export function runSingleNegotiation(params: NegotiationParameters): SingleRunRe
     calculation_range: { lower: Number(current_seller_bid.toFixed(2)), upper: Number(current_seller_bid.toFixed(2)) },
     batna_constraint_check: initialSellerCheck,
     timestamp: isoNow(),
+    verbiage: initialVerbiage
   });
 
   // FORCE the BBID formula for initial buyer bid
@@ -1972,6 +1987,9 @@ export function runSingleNegotiation(params: NegotiationParameters): SingleRunRe
   let total_surplus = 0;
   let deal_feasible_flag = false;
   if (final_price != null) {
+    // Updated surplus calculation: use final_price as the "last bid"
+    // Buyer surplus = BBATNA - Last bid
+    // Seller surplus = Last bid - SBATNA
     seller_surplus = Number((final_price - params.seller_batna).toFixed(2));
     buyer_surplus = Number((params.buyer_batna - final_price).toFixed(2));
     total_surplus = Number((seller_surplus + buyer_surplus).toFixed(2));
@@ -2200,11 +2218,19 @@ export function runMultipleSimulations(count: number): MultipleRunResult {
         if (roundData.verbiage) {
           if (roundData.agent === "seller") {
             // For sellers: V1 sentences are 0-100, V2 sentences are 100-200
-            // Extract both V1 and V2 numbers from combined verbiage
-            const v1Match = roundData.verbiage.match(/^(\d{1,3}):/); // First number at start
-            const v2Match = roundData.verbiage.match(/\n(\d{3}):/); // Second number after newline
-            v1Number = v1Match ? v1Match[1] : "";
-            v2Number = v2Match ? v2Match[1] : "";
+            // Check if verbiage contains newline (both V1 and V2) or just V2 (round 1)
+            if (roundData.verbiage.includes('\n')) {
+              // Combined V1 and V2 verbiage
+              const v1Match = roundData.verbiage.match(/^(\d{1,3}):/); // First number at start
+              const v2Match = roundData.verbiage.match(/\n(\d{3}):/); // Second number after newline
+              v1Number = v1Match ? v1Match[1] : "";
+              v2Number = v2Match ? v2Match[1] : "";
+            } else {
+              // Only V2 verbiage (seller's initial bid)
+              const v2OnlyMatch = roundData.verbiage.match(/^(\d{3}):/); // V2 number at start (100-200)
+              v1Number = ""; // No V1 for initial seller bid
+              v2Number = v2OnlyMatch ? v2OnlyMatch[1] : "";
+            }
           } else {
             // For buyers: extract V1 and V2 numbers
             // Buyer V1 sentences are 0-100, Buyer V2 sentences are 200-300

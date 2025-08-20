@@ -462,9 +462,9 @@ const DataGraph: React.FC<DataGraphProps> = ({
       }
     }
     
-    // Add zoom controls - positioned inside the visible area
+    // Add zoom controls - positioned above the graph
     const controlsGroup = svg.append('g')
-      .attr('transform', `translate(${width - 120}, 100)`)
+      .attr('transform', `translate(${width - 120}, 20)`)
       .attr('class', 'zoom-controls')
     
     // Zoom in button - smaller and more compact
