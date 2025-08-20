@@ -16,6 +16,8 @@ interface DataGraphProps {
   batnaValue?: number
   estimatedBatnaValue?: number
   showAllBids?: boolean
+  graphType?: 'seller' | 'buyer'
+  startingPrice?: number
 }
 
 const GraphContainer = styled(motion.div)`
@@ -32,7 +34,7 @@ const GraphContainer = styled(motion.div)`
     inset 0 1px 0 rgba(255, 255, 255, 0.8);
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
-  overflow: hidden;
+  overflow: visible;
   
   &::before {
     content: '';
@@ -68,6 +70,7 @@ const SvgContainer = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: visible;
 `
 
 const DataGraph: React.FC<DataGraphProps> = ({ 
@@ -82,7 +85,9 @@ const DataGraph: React.FC<DataGraphProps> = ({
   allRounds = [],
   batnaValue,
   estimatedBatnaValue,
-  showAllBids = false
+  showAllBids = false,
+  graphType,
+  startingPrice
 }) => {
   const svgRef = useRef<SVGSVGElement>(null)
 
@@ -97,14 +102,88 @@ const DataGraph: React.FC<DataGraphProps> = ({
     const svg = d3.select(svgRef.current)
     const width = 500
     const height = 340
-    const margin = { top: 30, right: 40, bottom: 60, left: 60 }
+    const margin = { top: 80, right: 60, bottom: 60, left: 60 } // Increased top margin for legend and right margin for x-axis visibility
 
     const chartWidth = width - margin.left - margin.right
     const chartHeight = height - margin.top - margin.bottom
 
+    // Create zoom behavior
+    const zoom = d3.zoom()
+      .scaleExtent([0.5, 5])
+      .on('zoom', (event) => {
+        const { transform } = event
+        chart.attr('transform', `translate(${margin.left}, ${margin.top}) ${transform}`)
+        
+        // Update axes with zoom transform
+        const newXScale = transform.rescaleX(xScale)
+        const newYScale = transform.rescaleY(yScale)
+        
+        // Update axis ticks
+        chart.selectAll('.x-axis-tick').remove()
+        chart.selectAll('.y-axis-tick').remove()
+        
+        // Redraw x-axis ticks
+        const xTicks = newXScale.ticks(8)
+        xTicks.forEach(tick => {
+          const tickX = newXScale(tick)
+          if (tickX >= 0 && tickX <= chartWidth) {
+            chart.append('line')
+              .attr('class', 'x-axis-tick')
+              .attr('x1', tickX)
+              .attr('y1', chartHeight)
+              .attr('x2', tickX)
+              .attr('y2', chartHeight + 5)
+              .attr('stroke', '#666')
+              .attr('stroke-width', 1)
+              .attr('opacity', 0.7)
+            
+            chart.append('text')
+              .attr('class', 'x-axis-tick')
+              .attr('x', tickX)
+              .attr('y', chartHeight + 25)
+              .attr('text-anchor', 'middle')
+              .attr('fill', '#555')
+              .attr('font-size', '11px')
+              .attr('font-weight', '600')
+              .text(`M${Math.round(tick)}`)
+          }
+        })
+        
+        // Redraw y-axis ticks
+        const yTicks = newYScale.ticks(6)
+        yTicks.forEach(tick => {
+          const tickY = newYScale(tick)
+          if (tickY >= 0 && tickY <= chartHeight) {
+            chart.append('line')
+              .attr('class', 'y-axis-tick')
+              .attr('x1', -5)
+              .attr('y1', tickY)
+              .attr('x2', 0)
+              .attr('y2', tickY)
+              .attr('stroke', '#666')
+              .attr('stroke-width', 1)
+              .attr('opacity', 0.7)
+            
+            chart.append('text')
+              .attr('class', 'y-axis-tick')
+              .attr('x', -12)
+              .attr('y', tickY + 4)
+              .attr('text-anchor', 'end')
+              .attr('fill', '#555')
+              .attr('font-size', '12px')
+              .attr('font-weight', '500')
+              .text(`${Math.round(tick)}`)
+          }
+        })
+      })
+
+    // Apply zoom behavior to svg
+    svg.call(zoom)
+
     const chart = svg
       .append('g')
       .attr('transform', `translate(${margin.left}, ${margin.top})`)
+      .attr('class', 'chart-content')
     
     // Create tooltip div (initially hidden)
     const tooltip = d3.select('body').selectAll('.graph-tooltip').data([0])
@@ -134,9 +213,10 @@ const DataGraph: React.FC<DataGraphProps> = ({
       allValues.push(...dataToUse.map(bid => bid.price));
     }
     
-    // Include BATNA values in range calculation
+    // Include BATNA values and starting price in range calculation
     if (batnaValue) allValues.push(batnaValue);
     if (estimatedBatnaValue) allValues.push(estimatedBatnaValue);
+    if (startingPrice) allValues.push(startingPrice);
     if (allBatnaPoints.length > 0) {
       allValues.push(...allBatnaPoints.map(point => point!.price));
     }
@@ -222,25 +302,28 @@ const DataGraph: React.FC<DataGraphProps> = ({
     for (let i = xMin; i <= xMax; i += 1) {
       const tickX = xScale(i)
       
-      // Add tick mark
-      chart.append('line')
-        .attr('x1', tickX)
-        .attr('y1', chartHeight)
-        .attr('x2', tickX)
-        .attr('y2', chartHeight + 5)
-        .attr('stroke', '#666')
-        .attr('stroke-width', 1)
-        .attr('opacity', 0.7)
-      
-      // Add tick label
-      chart.append('text')
-        .attr('x', tickX)
-        .attr('y', chartHeight + 25)
-        .attr('text-anchor', 'middle')
-        .attr('fill', '#555')
-        .attr('font-size', '11px')
-        .attr('font-weight', '600')
-        .text(`M${i}`)
+      // Only draw ticks that are within the visible chart area with some padding
+      if (tickX >= -10 && tickX <= chartWidth + 10) {
+        // Add tick mark
+        chart.append('line')
+          .attr('x1', tickX)
+          .attr('y1', chartHeight)
+          .attr('x2', tickX)
+          .attr('y2', chartHeight + 5)
+          .attr('stroke', '#666')
+          .attr('stroke-width', 1)
+          .attr('opacity', 0.7)
+        
+        // Add tick label
+        chart.append('text')
+          .attr('x', tickX)
+          .attr('y', chartHeight + 25)
+          .attr('text-anchor', 'middle')
+          .attr('fill', '#555')
+          .attr('font-size', '11px')
+          .attr('font-weight', '600')
+          .text(`M${i}`)
+      }
     }
 
     // Add axis labels
@@ -271,20 +354,21 @@ const DataGraph: React.FC<DataGraphProps> = ({
         .attr('d', timelineLine)
     }
     
-    // Add legend for month changes if there are bid data points
+    // Add legend for month changes at the top if there are bid data points
     if (dataToUse.length > 0) {
-      const legendGroup = chart.append('g')
-        .attr('transform', `translate(${chartWidth - 120}, 10)`)
+      const legendGroup = svg.append('g')
+        .attr('transform', `translate(${width / 2}, 20)`)
+        .attr('class', 'legend-group')
       
-      // Calculate legend height based on content
-      const legendHeight = showAllBids ? 85 : 55
+      // Calculate legend width based on content
+      const legendWidth = showAllBids ? 320 : 200
       
       // Legend background
       legendGroup.append('rect')
-        .attr('x', -8)
-        .attr('y', -8)
-        .attr('width', 130)
-        .attr('height', legendHeight)
+        .attr('x', -legendWidth / 2)
+        .attr('y', -12)
+        .attr('width', legendWidth)
+        .attr('height', 35)
         .attr('fill', 'rgba(255, 255, 255, 0.95)')
         .attr('stroke', '#ddd')
         .attr('stroke-width', 1)
@@ -293,90 +377,185 @@ const DataGraph: React.FC<DataGraphProps> = ({
       if (showAllBids) {
         // Seller bid legend
         legendGroup.append('circle')
-          .attr('cx', 8)
-          .attr('cy', 12)
+          .attr('cx', -120)
+          .attr('cy', 0)
           .attr('r', 5)
           .attr('fill', '#e74c3c')
           .attr('stroke', '#fff')
           .attr('stroke-width', 2)
         
         legendGroup.append('text')
-          .attr('x', 20)
-          .attr('y', 16)
-          .attr('font-size', '12px')
+          .attr('x', -108)
+          .attr('y', 4)
+          .attr('font-size', '11px')
           .attr('font-weight', '600')
           .attr('fill', '#555')
           .text('Seller bid')
         
         // Buyer bid legend
         legendGroup.append('circle')
-          .attr('cx', 8)
-          .attr('cy', 35)
+          .attr('cx', -40)
+          .attr('cy', 0)
           .attr('r', 5)
           .attr('fill', '#4a90e2')
           .attr('stroke', '#fff')
           .attr('stroke-width', 2)
         
         legendGroup.append('text')
-          .attr('x', 20)
-          .attr('y', 39)
-          .attr('font-size', '12px')
+          .attr('x', -28)
+          .attr('y', 4)
+          .attr('font-size', '11px')
           .attr('font-weight', '600')
           .attr('fill', '#555')
           .text('Buyer bid')
         
         // Month decrease legend
         legendGroup.append('circle')
-          .attr('cx', 8)
-          .attr('cy', 58)
+          .attr('cx', 40)
+          .attr('cy', 0)
           .attr('r', 6)
           .attr('fill', '#f39c12')
           .attr('stroke', '#e67e22')
           .attr('stroke-width', 3)
         
         legendGroup.append('text')
-          .attr('x', 20)
-          .attr('y', 62)
-          .attr('font-size', '12px')
+          .attr('x', 52)
+          .attr('y', 4)
+          .attr('font-size', '11px')
           .attr('font-weight', '600')
           .attr('fill', '#555')
-          .text('Month decrease')
+          .text('Month change')
       } else {
         // Normal bid legend
         legendGroup.append('circle')
-          .attr('cx', 8)
-          .attr('cy', 12)
+          .attr('cx', -70)
+          .attr('cy', 0)
           .attr('r', 5)
           .attr('fill', color)
           .attr('stroke', '#fff')
           .attr('stroke-width', 2)
         
         legendGroup.append('text')
-          .attr('x', 20)
-          .attr('y', 16)
-          .attr('font-size', '12px')
+          .attr('x', -58)
+          .attr('y', 4)
+          .attr('font-size', '11px')
           .attr('font-weight', '600')
           .attr('fill', '#555')
           .text('Normal bid')
         
         // Month decrease legend
         legendGroup.append('circle')
-          .attr('cx', 8)
-          .attr('cy', 35)
+          .attr('cx', 20)
+          .attr('cy', 0)
           .attr('r', 6)
           .attr('fill', '#f39c12')
           .attr('stroke', '#e67e22')
           .attr('stroke-width', 3)
         
         legendGroup.append('text')
-          .attr('x', 20)
-          .attr('y', 39)
-          .attr('font-size', '12px')
+          .attr('x', 32)
+          .attr('y', 4)
+          .attr('font-size', '11px')
           .attr('font-weight', '600')
           .attr('fill', '#555')
-          .text('Month decrease')
+          .text('Month change')
       }
     }
+    
+    // Add zoom controls - positioned inside the visible area
+    const controlsGroup = svg.append('g')
+      .attr('transform', `translate(${width - 120}, 100)`)
+      .attr('class', 'zoom-controls')
+    
+    // Zoom in button - smaller and more compact
+    const zoomInBtn = controlsGroup.append('g')
+      .attr('class', 'zoom-btn')
+      .style('cursor', 'pointer')
+      .on('click', () => {
+        svg.transition().duration(300).call(
+          zoom.scaleBy, 1.5
+        )
+      })
+    
+    zoomInBtn.append('rect')
+      .attr('x', 0)
+      .attr('y', 0)
+      .attr('width', 24)
+      .attr('height', 20)
+      .attr('fill', 'rgba(255, 255, 255, 0.95)')
+      .attr('stroke', '#666')
+      .attr('stroke-width', 1)
+      .attr('rx', 3)
+    
+    zoomInBtn.append('text')
+      .attr('x', 12)
+      .attr('y', 14)
+      .attr('text-anchor', 'middle')
+      .attr('font-size', '12px')
+      .attr('font-weight', 'bold')
+      .attr('fill', '#333')
+      .text('+')
+    
+    // Zoom out button
+    const zoomOutBtn = controlsGroup.append('g')
+      .attr('transform', 'translate(26, 0)')
+      .attr('class', 'zoom-btn')
+      .style('cursor', 'pointer')
+      .on('click', () => {
+        svg.transition().duration(300).call(
+          zoom.scaleBy, 1 / 1.5
+        )
+      })
+    
+    zoomOutBtn.append('rect')
+      .attr('x', 0)
+      .attr('y', 0)
+      .attr('width', 24)
+      .attr('height', 20)
+      .attr('fill', 'rgba(255, 255, 255, 0.95)')
+      .attr('stroke', '#666')
+      .attr('stroke-width', 1)
+      .attr('rx', 3)
+    
+    zoomOutBtn.append('text')
+      .attr('x', 12)
+      .attr('y', 14)
+      .attr('text-anchor', 'middle')
+      .attr('font-size', '12px')
+      .attr('font-weight', 'bold')
+      .attr('fill', '#333')
+      .text('−')
+    
+    // Reset zoom button
+    const resetBtn = controlsGroup.append('g')
+      .attr('transform', 'translate(0, 24)')
+      .attr('class', 'reset-btn')
+      .style('cursor', 'pointer')
+      .on('click', () => {
+        svg.transition().duration(500).call(
+          zoom.transform,
+          d3.zoomIdentity
+        )
+      })
+    
+    resetBtn.append('rect')
+      .attr('x', 0)
+      .attr('y', 0)
+      .attr('width', 50)
+      .attr('height', 18)
+      .attr('fill', 'rgba(255, 255, 255, 0.95)')
+      .attr('stroke', '#666')
+      .attr('stroke-width', 1)
+      .attr('rx', 3)
+    
+    resetBtn.append('text')
+      .attr('x', 25)
+      .attr('y', 12)
+      .attr('text-anchor', 'middle')
+      .attr('font-size', '10px')
+      .attr('font-weight', 'bold')
+      .attr('fill', '#333')
+      .text('Reset')
     
     // Add current month-to-key indicator if we have bid data
     if (dataToUse.length > 0) {
@@ -465,13 +644,16 @@ const DataGraph: React.FC<DataGraphProps> = ({
 
     // Draw Estimated BATNA horizontal line if provided
     if (estimatedBatnaValue) {
+      // Use red for buyer graph (showing estimated seller BATNA), blue for seller graph (showing estimated buyer BATNA)
+      const estBatnaColor = graphType === 'buyer' ? '#e74c3c' : '#4a90e2'
+      
       const y = yScale(estimatedBatnaValue)
       chart.append('line')
         .attr('x1', 0)
         .attr('y1', y)
         .attr('x2', chartWidth)
         .attr('y2', y)
-        .attr('stroke', color)
+        .attr('stroke', estBatnaColor)
         .attr('stroke-width', 2)
         .attr('stroke-dasharray', '4,2')
         .attr('opacity', 0.6)
@@ -480,10 +662,71 @@ const DataGraph: React.FC<DataGraphProps> = ({
         .attr('x', chartWidth - 8)
         .attr('y', y + 18)
         .attr('text-anchor', 'end')
-        .attr('fill', color)
+        .attr('fill', estBatnaColor)
         .attr('font-size', '12px')
         .attr('font-weight', '600')
         .text('Est. BATNA')
+    }
+
+    // Draw starting price point if provided
+    if (startingPrice) {
+      const startingMonth = 12 // Assume starting price is at month 12
+      const x = xScale(startingMonth)
+      const y = yScale(startingPrice)
+      
+      // Add starting price point with distinct styling
+      const startingCircle = chart.append('circle')
+        .attr('cx', x)
+        .attr('cy', y)
+        .attr('r', 0)
+        .attr('fill', '#666') // Gray color for starting price
+        .attr('stroke', '#fff')
+        .attr('stroke-width', 2)
+        .attr('opacity', 0.9)
+        .style('cursor', 'pointer')
+        .on('mouseover', function(event) {
+          const tooltipContent = `
+            <div style="text-align: center;">
+              <div style="font-weight: 700; margin-bottom: 4px;">Starting Price</div>
+              <div>Price: $${startingPrice.toFixed(2)}K</div>
+              <div>Month-to-Key: ${startingMonth}</div>
+            </div>
+          `
+          
+          d3.select('.graph-tooltip')
+            .style('opacity', 1)
+            .html(tooltipContent)
+            .style('left', (event.pageX + 10) + 'px')
+            .style('top', (event.pageY - 10) + 'px')
+        })
+        .on('mouseout', function() {
+          d3.select('.graph-tooltip')
+            .style('opacity', 0)
+        })
+      
+      // Animate starting price point appearance
+      startingCircle
+        .transition()
+        .duration(500)
+        .attr('r', 8)
+        .ease(d3.easeElasticOut)
+      
+      // Add "S" label for starting price
+      const startingLabel = chart.append('text')
+        .attr('x', x)
+        .attr('y', y + 5)
+        .attr('text-anchor', 'middle')
+        .attr('fill', '#fff')
+        .attr('font-size', '12px')
+        .attr('font-weight', '700')
+        .attr('opacity', 0)
+        .text('S')
+      
+      startingLabel
+        .transition()
+        .duration(400)
+        .delay(300)
+        .attr('opacity', 1)
     }
 
     // Draw bid data points with enhanced month visualization
@@ -491,9 +734,15 @@ const DataGraph: React.FC<DataGraphProps> = ({
       const x = xScale(bid.month)
       const y = yScale(bid.price)
       
-      // Determine if month decreased from previous bid (seller rule triggered)
-      const monthDecreased = index > 0 && bid.month < dataToUse[index - 1].month
-      const monthChanged = index > 0 && bid.month !== dataToUse[index - 1].month
+      // Determine if month changed from previous bid or starting price
+      let monthChanged = false
+      if (index > 0) {
+        monthChanged = bid.month !== dataToUse[index - 1].month
+      } else if (index === 0 && bid.agent === 'buyer') {
+        // For first buyer bid, compare to starting price month (assume month 12 for starting price)
+        const startingMonth = 12
+        monthChanged = bid.month !== startingMonth
+      }
       
       // Determine bid color based on agent and showAllBids setting
       let bidColor = color;
@@ -502,15 +751,50 @@ const DataGraph: React.FC<DataGraphProps> = ({
       }
       
       // Add bid point with different styling based on month change
+      // Use bidder's color for month change points (red for seller, blue for buyer)
+      let pointColor = bidColor
+      let strokeColor = '#fff'
+      let strokeWidth = 2
+      
+      if (monthChanged) {
+        pointColor = bid.agent === 'seller' ? '#e74c3c' : '#4a90e2'
+        strokeColor = '#f39c12' // Amber stroke for month changes
+        strokeWidth = 3
+      }
+      
       const bidCircle = chart.append('circle')
         .attr('cx', x)
         .attr('cy', y)
         .attr('r', 0)
-        .attr('fill', monthDecreased ? '#f39c12' : bidColor)
-        .attr('stroke', monthDecreased ? '#e67e22' : '#fff')
-        .attr('stroke-width', monthDecreased ? 3 : 2)
+        .attr('fill', pointColor)
+        .attr('stroke', strokeColor)
+        .attr('stroke-width', strokeWidth)
         .attr('opacity', 0.9)
         .style('cursor', 'pointer')
+        .on('click', function(event) {
+          // Enhanced click interaction - zoom to point
+          const clickX = xScale(bid.month)
+          const clickY = yScale(bid.price)
+          const transform = d3.zoomIdentity
+            .translate(chartWidth / 2 - clickX * 2, chartHeight / 2 - clickY * 2)
+            .scale(2)
+          
+          svg.transition().duration(750).call(
+            zoom.transform,
+            transform
+          )
+          
+          // Highlight clicked point
+          d3.select(this)
+            .transition()
+            .duration(300)
+            .attr('r', monthChanged ? 12 : 10)
+            .attr('stroke-width', monthChanged ? 5 : 4)
+            .transition()
+            .duration(300)
+            .attr('r', monthChanged ? 7 : 6)
+            .attr('stroke-width', monthChanged ? 3 : 2)
+        })
         .on('mouseover', function(event) {
           // Show tooltip with bid and month information
           const tooltipContent = `
@@ -518,7 +802,7 @@ const DataGraph: React.FC<DataGraphProps> = ({
               <div style="font-weight: 700; margin-bottom: 4px;">${showAllBids && bid.agent ? bid.agent.charAt(0).toUpperCase() + bid.agent.slice(1) : ''} Bid ${index + 1}</div>
               <div>Price: $${bid.price.toFixed(2)}K</div>
               <div>Month-to-Key: ${bid.month}</div>
-              ${monthDecreased ? '<div style="color: #f39c12; margin-top: 4px;">⚠ Month Decreased</div>' : ''}
+              ${monthChanged ? '<div style="color: #f39c12; margin-top: 4px;">⚠ Month Changed</div>' : ''}
               ${index > 0 ? `<div style="margin-top: 4px; font-size: 10px; color: #ccc;">Previous: M${dataToUse[index - 1].month}</div>` : ''}
             </div>
           `
@@ -533,8 +817,8 @@ const DataGraph: React.FC<DataGraphProps> = ({
           d3.select(this)
             .transition()
             .duration(200)
-            .attr('r', monthDecreased ? 8 : 7)
-            .attr('stroke-width', monthDecreased ? 4 : 3)
+            .attr('r', monthChanged ? 8 : 7)
+            .attr('stroke-width', monthChanged ? 4 : 3)
         })
         .on('mouseout', function() {
           // Hide tooltip
@@ -545,8 +829,8 @@ const DataGraph: React.FC<DataGraphProps> = ({
           d3.select(this)
             .transition()
             .duration(200)
-            .attr('r', monthDecreased ? 7 : 6)
-            .attr('stroke-width', monthDecreased ? 3 : 2)
+            .attr('r', monthChanged ? 7 : 6)
+            .attr('stroke-width', monthChanged ? 3 : 2)
         })
       
       // Animate bid point appearance with staggered delay
@@ -554,56 +838,21 @@ const DataGraph: React.FC<DataGraphProps> = ({
         .transition()
         .duration(500)
         .delay(index * 200)
-        .attr('r', monthDecreased ? 7 : 6)
+        .attr('r', monthChanged ? 7 : 6)
         .ease(d3.easeElasticOut)
       
-      // Add price label with improved visibility
-      const priceLabel = chart.append('text')
+      // Add bid number label inside the circle
+      const bidLabel = chart.append('text')
         .attr('x', x)
-        .attr('y', y - 35)
+        .attr('y', y + 5)
         .attr('text-anchor', 'middle')
-        .attr('fill', bidColor)
+        .attr('fill', '#fff')
         .attr('font-size', '10px')
         .attr('font-weight', '700')
         .attr('opacity', 0)
-        .text(`$${bid.price.toFixed(0)}K`)
+        .text(`${index + 1}`)
       
-      priceLabel
-        .transition()
-        .duration(400)
-        .delay(index * 200 + 300)
-        .attr('opacity', 0.8)
-      
-      // Add month label (M12, M11, etc.) with enhanced styling
-      const monthLabel = chart.append('text')
-        .attr('x', x)
-        .attr('y', y - 15)
-        .attr('text-anchor', 'middle')
-        .attr('fill', monthDecreased ? '#d35400' : bidColor)
-        .attr('font-size', '9px')
-        .attr('font-weight', '700')
-        .attr('opacity', 0)
-        .text(`M${bid.month}`)
-      
-      // Add background for month label for better visibility
-      const labelBg = chart.append('rect')
-        .attr('x', x - 14)
-        .attr('y', y - 26)
-        .attr('width', 24)
-        .attr('height', 14)
-        .attr('fill', 'rgba(255, 255, 255, 0.95)')
-        .attr('stroke', monthDecreased ? '#d35400' : color)
-        .attr('stroke-width', 1)
-        .attr('rx', 3)
-        .attr('opacity', 0)
-      
-      labelBg
-        .transition()
-        .duration(400)
-        .delay(index * 200 + 350)
-        .attr('opacity', 0.8)
-      
-      monthLabel
+      bidLabel
         .transition()
         .duration(400)
         .delay(index * 200 + 400)
@@ -616,7 +865,7 @@ const DataGraph: React.FC<DataGraphProps> = ({
       for (let i = 0; i < dataToUse.length - 1; i++) {
         const currentBid = dataToUse[i]
         const nextBid = dataToUse[i + 1]
-        const monthDecreased = nextBid.month < currentBid.month
+        const monthChanged = nextBid.month !== currentBid.month
         
         // Determine line color based on agent and showAllBids setting
         let lineColor = color;
@@ -629,9 +878,9 @@ const DataGraph: React.FC<DataGraphProps> = ({
           .attr('y1', yScale(currentBid.price))
           .attr('x2', xScale(nextBid.month))
           .attr('y2', yScale(nextBid.price))
-          .attr('stroke', monthDecreased ? '#e67e22' : lineColor)
-          .attr('stroke-width', monthDecreased ? 3 : 2)
-          .attr('stroke-dasharray', monthDecreased ? '5,3' : 'none')
+          .attr('stroke', monthChanged ? '#f39c12' : lineColor) // Amber for month changes
+          .attr('stroke-width', monthChanged ? 3 : 2)
+          .attr('stroke-dasharray', monthChanged ? '5,3' : 'none')
           .attr('opacity', 0)
         
         // Animate line segment appearance
@@ -639,37 +888,43 @@ const DataGraph: React.FC<DataGraphProps> = ({
           .transition()
           .duration(400)
           .delay(dataToUse.length * 200 + i * 100)
-          .attr('opacity', monthDecreased ? 0.8 : 0.7)
+          .attr('opacity', monthChanged ? 0.8 : 0.7)
           .ease(d3.easeLinear)
       }
       
       // Add trajectory direction indicators for month changes
       dataToUse.forEach((bid, index) => {
+        let monthChanged = false
         if (index > 0) {
           const prevBid = dataToUse[index - 1]
-          const monthDecreased = bid.month < prevBid.month
+          monthChanged = bid.month !== prevBid.month
+        } else if (index === 0 && bid.agent === 'buyer') {
+          // For first buyer bid, compare to starting price month
+          const startingMonth = 12
+          monthChanged = bid.month !== startingMonth
+        }
+        
+        if (monthChanged && index > 0) {
+          // Add small arrow or indicator showing month change
+          const prevBid = dataToUse[index - 1]
+          const midX = (xScale(prevBid.month) + xScale(bid.month)) / 2
+          const midY = (yScale(prevBid.price) + yScale(bid.price)) / 2
           
-          if (monthDecreased) {
-            // Add small arrow or indicator showing month decrease
-            const midX = (xScale(prevBid.month) + xScale(bid.month)) / 2
-            const midY = (yScale(prevBid.price) + yScale(bid.price)) / 2
-            
-            const indicator = chart.append('text')
-              .attr('x', midX)
-              .attr('y', midY - 5)
-              .attr('text-anchor', 'middle')
-              .attr('fill', '#e67e22')
-              .attr('font-size', '8px')
-              .attr('font-weight', '700')
-              .attr('opacity', 0)
-              .text('⚠')
-            
-            indicator
-              .transition()
-              .duration(300)
-              .delay(dataToUse.length * 200 + index * 100 + 200)
-              .attr('opacity', 0.8)
-          }
+          const indicator = chart.append('text')
+            .attr('x', midX)
+            .attr('y', midY - 5)
+            .attr('text-anchor', 'middle')
+            .attr('fill', '#f39c12') // Amber color for month change indicators
+            .attr('font-size', '8px')
+            .attr('font-weight', '700')
+            .attr('opacity', 0)
+            .text('⚠')
+          
+          indicator
+            .transition()
+            .duration(300)
+            .delay(dataToUse.length * 200 + index * 100 + 200)
+            .attr('opacity', 0.8)
         }
       })
     }
