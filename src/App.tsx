@@ -262,7 +262,7 @@ const PersonalityButton = styled.button<{ isActive: boolean }>`
   padding: 10px 16px;
   border: 3px solid ${props => props.isActive ? '#4a90e2' : 'rgba(0, 0, 0, 0.4)'};
   background: ${props => props.isActive 
-    ? 'linear-gradient(135deg, #4a90e2 0%, #357abd 100%)' 
+    ? 'linear-gradient(135deg,rgb(226, 74, 74) 40%,rgb(0, 106, 212) 100%)' 
     : 'rgba(255, 255, 255, 0.98)'};
   color: ${props => props.isActive ? 'white' : '#000000'};
   border-radius: 24px;
@@ -272,13 +272,13 @@ const PersonalityButton = styled.button<{ isActive: boolean }>`
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   backdrop-filter: blur(10px);
   box-shadow: ${props => props.isActive 
-    ? '0 8px 20px rgba(74, 144, 226, 0.4), 0 4px 8px rgba(0, 0, 0, 0.1)' 
+    ? '0 8px 20px rgba(20, 71, 129, 0.4), 0 4px 8px rgba(0, 0, 0, 0.1)' 
     : '0 6px 16px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.95)'};
   
   &:hover {
     transform: translateY(-3px) scale(1.05);
     box-shadow: ${props => props.isActive 
-      ? '0 12px 28px rgba(74, 144, 226, 0.5), 0 6px 12px rgba(0, 0, 0, 0.15)' 
+      ? '0 12px 28px rgba(255, 255, 255, 0.5), 0 6px 12px rgba(0, 0, 0, 0.15)' 
       : '0 10px 24px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.98)'};
   }
   
@@ -590,7 +590,7 @@ const Slider = styled.input`
     width: 20px;
     height: 20px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+    background: linear-gradient(135deg,rgb(168, 0, 0) 40%,rgb(0, 84, 209) 100%);
     cursor: pointer;
     box-shadow: 0 2px 6px rgba(231, 76, 60, 0.3);
   }
@@ -660,7 +660,7 @@ const ModalButton = styled.button<{ isPrimary?: boolean }>`
 `
 
 const RandomButton = styled.button`
-  background: linear-gradient(135deg,rgb(10, 8, 4) 0%,rgb(24, 14, 6) 100%);
+  background: linear-gradient(135deg,rgb(196, 33, 33) 0%,rgb(7, 33, 150) 100%);
   color: white;
   border: none;
   padding: 10px 20px;
@@ -690,7 +690,7 @@ const SimulationModalContent = styled(ModalContent)`
 const SimulationTitle = styled.h2`
   font-size: 24px;
   font-weight: 700;
-  color: #e2e8f0;
+  color:rgb(0, 78, 20);
   margin-bottom: 30px;
   text-transform: uppercase;
   letter-spacing: 1px;
@@ -704,7 +704,7 @@ const SimulationCountLabel = styled.label`
   display: block;
   margin-bottom: 15px;
   font-weight: 600;
-  color: #e2e8f0;
+  color:rgb(0, 0, 0);
   font-size: 16px;
 `
 
@@ -1285,11 +1285,11 @@ function App() {
             </SliderContainer>
             
             <SliderContainer>
-              <SliderLabel>Month-to-Key: 0 - 16 months</SliderLabel>
+              <SliderLabel>Month-to-Key: 0 - 12 months</SliderLabel>
               <Slider
                 type="range"
                 min="0"
-                max="16"
+                max="12"
                 step="1"
                 value={monthToKey}
                 onChange={(e) => setMonthToKey(parseInt(e.target.value))}
@@ -1332,8 +1332,7 @@ function App() {
             </div>
             
             <div style={{textAlign: 'center', margin: '20px 0', fontSize: '14px', color: '#666'}}>
-              BATNAs will be randomly generated to match the simulation algorithm exactly.<br/>
-              Month-to-Key represents the time horizon for the negotiation (available for graph plotting).
+              BATNAs will be generated using our algorithm.<br/>
             </div>
             
             <ButtonGroup>
@@ -1345,7 +1344,7 @@ function App() {
               </ModalButton>
               <RandomButton onClick={() => {
                 setNegotiationPrice(Math.floor(Math.random() * (1000 - 250 + 1)) + 250)
-                setMonthToKey(Math.floor(Math.random() * 17)) // 0-16 inclusive
+                setMonthToKey(Math.floor(Math.random() * 13)) // 0-16 inclusive
                 const buyerProfiles: BuyerProfile[] = ['bulldozer', 'diplomat', 'chameleon']
                 const sellerProfiles: SellerProfile[] = ['bulldozer', 'diplomat', 'chameleon']
                 setSelectedBuyerProfile(buyerProfiles[Math.floor(Math.random() * buyerProfiles.length)])
