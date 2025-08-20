@@ -710,16 +710,27 @@ const DataGraph: React.FC<DataGraphProps> = ({
         .duration(500)
         .attr('r', 8)
         .ease(d3.easeElasticOut)
+    }
+
+    // Add starting price label after all other elements (to ensure it appears on top)
+    if (startingPrice) {
+      const startingMonth = 12 // Assume starting price is at month 12
+      const x = xScale(startingMonth)
+      const y = yScale(startingPrice)
       
       // Add "S" label for starting price
       const startingLabel = chart.append('text')
         .attr('x', x)
         .attr('y', y + 5)
         .attr('text-anchor', 'middle')
-        .attr('fill', '#fff')
+        .attr('fill', '#000')
         .attr('font-size', '12px')
-        .attr('font-weight', '700')
+        .attr('font-weight', '900')
         .attr('opacity', 0)
+        .attr('stroke', '#fff')
+        .attr('stroke-width', '0.5px')
+        .attr('paint-order', 'stroke')
+        .style('pointer-events', 'none')
         .text('S')
       
       startingLabel
@@ -840,16 +851,36 @@ const DataGraph: React.FC<DataGraphProps> = ({
         .delay(index * 200)
         .attr('r', monthChanged ? 7 : 6)
         .ease(d3.easeElasticOut)
+    })
+
+    // Add bid number labels after all circles are drawn (to ensure they appear on top)
+    dataToUse.forEach((bid, index) => {
+      const x = xScale(bid.month)
+      const y = yScale(bid.price)
+      
+      // Determine if month changed from previous bid or starting price
+      let monthChanged = false
+      if (index > 0) {
+        monthChanged = bid.month !== dataToUse[index - 1].month
+      } else if (index === 0 && bid.agent === 'buyer') {
+        // For first buyer bid, compare to starting price month (assume month 12 for starting price)
+        const startingMonth = 12
+        monthChanged = bid.month !== startingMonth
+      }
       
       // Add bid number label inside the circle
       const bidLabel = chart.append('text')
         .attr('x', x)
         .attr('y', y + 5)
         .attr('text-anchor', 'middle')
-        .attr('fill', '#fff')
-        .attr('font-size', '10px')
-        .attr('font-weight', '700')
+        .attr('fill', '#000')
+        .attr('font-size', '11px')
+        .attr('font-weight', '900')
         .attr('opacity', 0)
+        .attr('stroke', '#fff')
+        .attr('stroke-width', '0.5px')
+        .attr('paint-order', 'stroke')
+        .style('pointer-events', 'none')
         .text(`${index + 1}`)
       
       bidLabel
