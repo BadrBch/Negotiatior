@@ -1,5 +1,15 @@
 /* Front-end negotiation simulator implementing the specified algorithm */
 
+import { 
+  loadRLModel, 
+  buildStateVector, 
+  predictBATNAs, 
+  generateBaselineBATNAs,
+  type ModelType,
+  type ProfileType,
+  type NegotiationParams as ModelParams
+} from './batnaModel';
+
 export type NegotiationOutcome =
   | "deal"
   | "walkaway"
@@ -1762,7 +1772,20 @@ export interface MultipleRunResult {
   sessions: SessionFiles[];
 }
 
-export function runMultipleSimulations(count: number): MultipleRunResult {
+export async function runMultipleSimulations(count: number, modelType?: ModelType): Promise<MultipleRunResult> {
+  // Load model if not using baseline
+  let model: any = null;
+  if (modelType && modelType !== 'baseline') {
+    try {
+      console.log(`Loading ${modelType.toUpperCase()} model...`);
+      model = await loadRLModel(modelType);
+      console.log(`Successfully loaded ${modelType.toUpperCase()} model`);
+    } catch (error) {
+      console.warn(`Failed to load ${modelType} model, falling back to baseline:`, error);
+      modelType = undefined; // Fall back to baseline
+    }
+  }
+
   // Create horizontal CSV with one row per negotiation and all bids as columns
   const rows: string[] = [];
   
@@ -1790,16 +1813,56 @@ export function runMultipleSimulations(count: number): MultipleRunResult {
     // Buyer's BATNA = SP * (1 + q), q in [0, 0.2]
     const q = uniform(Math.random, 0.0, 0.2);
     const buyer_batna = sp * (1 + q);
-    // ESBATNA = starting price - e, where e <= 12%
-    const e_seller = uniform(Math.random, 0.0, 0.12);
-    const est_seller = Math.round(sp * (1 - e_seller));
-    // EBBATNA = starting price + e, where -12% <= e <= 12%
-    const e_buyer = uniform(Math.random, -0.12, 0.12);
-    const est_buyer = Math.round(sp * (1 + e_buyer));
 
-    // Randomly assign personality profiles
-    const buyerProfiles = ["bulldozer", "diplomat", "chameleon"];
-    const sellerProfiles = ["bulldozer", "diplomat", "chameleon"];
+    // Randomly assign personality profiles first
+    const buyerProfiles: ProfileType[] = ["bulldozer", "diplomat", "chameleon"];
+    const sellerProfiles: ProfileType[] = ["bulldozer", "diplomat", "chameleon"];
+    const buyerProfile = buyerProfiles[Math.floor(Math.random() * buyerProfiles.length)];
+    const sellerProfile = sellerProfiles[Math.floor(Math.random() * sellerProfiles.length)];
+    
+    // Generate estimated BATNAs using model prediction or baseline
+    let est_seller: number;
+    let est_buyer: number;
+    
+    if (modelType && modelType !== 'baseline' && model) {
+      try {
+        // Build state vector for model prediction (initial state)
+        const modelParams: ModelParams = {
+          currentRound: 1,
+          maxRounds: 4, // Max counter offers default
+          startingPrice: sp,
+          currentBid: 0, // No bid yet at initial state
+          currentAgent: 'seller', // Seller starts
+          buyerProfile,
+          sellerProfile,
+          prevBid1: 0,
+          prevBid2: 0,
+          totalRounds: 1, // Initial assumption
+          lastSellerBid: 0,
+          lastBuyerBid: 0,
+          spread: 0,
+          sellerDrop: 0,
+          buyerRaise: 0,
+          currentV1: 0,
+          currentV2: 0
+        };
+        
+        const stateVector = buildStateVector(modelParams);
+        const prediction = await predictBATNAs(model, stateVector);
+        est_seller = prediction.estSeller;
+        est_buyer = prediction.estBuyer;
+      } catch (error) {
+        console.warn(`Model prediction failed for simulation ${i}, using baseline:`, error);
+        const fallback = generateBaselineBATNAs(sp);
+        est_seller = fallback.estSeller;
+        est_buyer = fallback.estBuyer;
+      }
+    } else {
+      // Baseline: use original hardcoded random estimation
+      const fallback = generateBaselineBATNAs(sp);
+      est_seller = fallback.estSeller;
+      est_buyer = fallback.estBuyer;
+    }
     
     // Randomize starting month_to_key (0-16)
     const randomMonthToKey = Math.floor(Math.random() * 17); // 0 to 16 inclusive
@@ -1812,8 +1875,8 @@ export function runMultipleSimulations(count: number): MultipleRunResult {
       estimated_seller_batna: Number(est_seller.toFixed(2)),
       max_counter_offers: 4,
       random_seed: null,
-      buyer_profile: buyerProfiles[Math.floor(Math.random() * buyerProfiles.length)] as BuyerProfile,
-      seller_profile: sellerProfiles[Math.floor(Math.random() * sellerProfiles.length)] as SellerProfile,
+      buyer_profile: buyerProfile as BuyerProfile,
+      seller_profile: sellerProfile as SellerProfile,
       month_to_key: randomMonthToKey,
     });
 

@@ -4,6 +4,8 @@ import Robot from './components/Robot'
 import TranscriptBox, { TranscriptMessage } from './components/TranscriptBox'
 import { NegotiationParameters, BuyerProfile, SellerProfile, StepByStepNegotiation, runMultipleSimulations } from './simulator/negotiation'
 import DataGraph from './components/DataGraph'
+import ComparisonPanel from './components/ComparisonPanel'
+
 import React, { useState } from 'react'
 
 const AppContainer = styled.div`
@@ -484,6 +486,18 @@ const DarkSimulationButton = styled(DarkButton)`
   }
 `
 
+const DarkRLButton = styled(DarkButton)`
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+  box-shadow: 0 8px 20px rgba(99, 102, 241, 0.4);
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 25px rgba(99, 102, 241, 0.5);
+    background: linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%);
+  }
+`
+
+
 const ModalOverlay = styled.div`
   position: fixed;
   top: 0;
@@ -682,93 +696,6 @@ const RandomButton = styled.button`
   }
 `
 
-const SimulationModalContent = styled(ModalContent)`
-  max-width: 400px;
-  text-align: center;
-`
-
-const SimulationTitle = styled.h2`
-  font-size: 24px;
-  font-weight: 700;
-  color:rgb(0, 78, 20);
-  margin-bottom: 30px;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-`
-
-const SimulationCountContainer = styled.div`
-  margin-bottom: 30px;
-`
-
-const SimulationCountLabel = styled.label`
-  display: block;
-  margin-bottom: 15px;
-  font-weight: 600;
-  color:rgb(0, 0, 0);
-  font-size: 16px;
-`
-
-const SimulationCountSelect = styled.select`
-  width: 100%;
-  padding: 12px 16px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-radius: 12px;
-  font-size: 16px;
-  font-weight: 600;
-  background: rgba(255, 255, 255, 0.95);
-  color: #1a202c;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  
-  &:focus {
-    outline: none;
-    border-color: #60a5fa;
-    box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.2);
-  }
-`
-
-const RunButton = styled.button`
-  width: 100%;
-  padding: 15px 30px;
-  border: none;
-  border-radius: 12px;
-  font-size: 16px;
-  font-weight: 700;
-  color: white;
-  background: linear-gradient(135deg, #059669 0%, #047857 100%);
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 8px 20px rgba(5, 150, 105, 0.3);
-  margin-bottom: 15px;
-  
-  &:hover:not(:disabled) {
-    transform: translateY(-2px);
-    box-shadow: 0 12px 25px rgba(5, 150, 105, 0.4);
-    background: linear-gradient(135deg, #0d9488 0%, #059669 100%);
-  }
-  
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    transform: none;
-  }
-`
-
-
-const LoadingSpinner = styled.div`
-  display: inline-block;
-  width: 24px;
-  height: 24px;
-  border: 3px solid rgba(255, 255, 255, 0.3);
-  border-radius: 50%;
-  border-top-color: white;
-  animation: spin 1s ease-in-out infinite;
-  margin: 0 auto;
-  
-  @keyframes spin {
-    to { transform: rotate(360deg); }
-  }
-`
 
 const BatnaSection = styled.div`
   display: flex;
@@ -843,6 +770,105 @@ const BatnaInputField = styled.input`
   
   &::placeholder {
     color: #666666;
+  }
+`
+
+const SimulationModalContent = styled(ModalContent)`
+  max-width: 400px;
+  text-align: center;
+`
+
+const RLSimulationModalContent = styled(ModalContent)`
+  max-width: 900px;
+  max-height: 85vh;
+  text-align: center;
+  padding: 30px;
+  margin: 20px auto;
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+`
+
+const SimulationTitle = styled.h2`
+  font-size: 24px;
+  font-weight: 700;
+  color:rgb(0, 78, 20);
+  margin-bottom: 30px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+`
+
+const SimulationCountContainer = styled.div`
+  margin-bottom: 30px;
+`
+
+const SimulationCountLabel = styled.label`
+  display: block;
+  margin-bottom: 15px;
+  font-weight: 600;
+  color:rgb(0, 0, 0);
+  font-size: 16px;
+`
+
+const SimulationCountSelect = styled.select`
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.95);
+  color: #1a202c;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  
+  &:focus {
+    outline: none;
+    border-color: #60a5fa;
+    box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.2);
+  }
+`
+
+const RunButton = styled.button`
+  width: 100%;
+  padding: 15px 30px;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 700;
+  color: white;
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 8px 20px rgba(5, 150, 105, 0.3);
+  margin-bottom: 15px;
+  
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 25px rgba(5, 150, 105, 0.4);
+    background: linear-gradient(135deg, #0d9488 0%, #059669 100%);
+  }
+  
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
+`
+
+const LoadingSpinner = styled.div`
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: white;
+  animation: spin 1s ease-in-out infinite;
+  margin: 0 auto;
+  
+  @keyframes spin {
+    to { transform: rotate(360deg); }
   }
 `
 
@@ -948,6 +974,14 @@ function App() {
   }
 
   // Get bid data for graphs with complete timeline visualization
+  // Simulation modal state
+  const [showSimulationModal, setShowSimulationModal] = useState<boolean>(false)
+  const [simulationCount, setSimulationCount] = useState<number>(1000)
+  const [isSimulationRunning, setIsSimulationRunning] = useState<boolean>(false)
+  
+  // Comparison modal state
+  const [showComparisonModal, setShowComparisonModal] = useState<boolean>(false)
+
   const getBidDataForGraphs = () => {
     if (!stepNegotiation) return { sellerBids: [], buyerBids: [], allRounds: [] }
     
@@ -1008,10 +1042,6 @@ function App() {
     return { sellerBids, buyerBids, allRounds }
   }
 
-  // Simulation modal state
-  const [showSimulationModal, setShowSimulationModal] = useState<boolean>(false)
-  const [simulationCount, setSimulationCount] = useState<number>(1000)
-  const [isSimulationRunning, setIsSimulationRunning] = useState<boolean>(false)
 
 
   const handleNegotiateClick = () => {
@@ -1020,6 +1050,10 @@ function App() {
 
   const handleSimulationClick = () => {
     setShowSimulationModal(true)
+  }
+  
+  const handleComparisonClick = () => {
+    setShowComparisonModal(true)
   }
 
   const handleRunSimulation = async () => {
@@ -1070,6 +1104,7 @@ function App() {
       setIsSimulationRunning(false)
     }
   }
+
 
   const handleStartClick = async () => {
     // Use step-by-step negotiation with same parameter generation as runMultipleSimulations
@@ -1335,6 +1370,9 @@ function App() {
         <DarkSimulationButton onClick={handleSimulationClick}>
           Simulation
         </DarkSimulationButton>
+        <DarkRLButton onClick={handleComparisonClick}>
+          Simulation with RL
+        </DarkRLButton>
       </HorizontalButtonContainer>
       
       {showNegotiateModal && (
@@ -1464,7 +1502,17 @@ function App() {
           </SimulationModalContent>
         </ModalOverlay>
       )}
-      
+
+      {showComparisonModal && (
+        <ModalOverlay>
+          <RLSimulationModalContent>
+            <ComparisonPanel embedded={true} />
+            <ModalButton onClick={() => setShowComparisonModal(false)}>
+              Close
+            </ModalButton>
+          </RLSimulationModalContent>
+        </ModalOverlay>
+      )}
 
       <LeftRobotLeftTabs>
         {leftRobotTabs.slice(0, 2).map((tab, index) => {
