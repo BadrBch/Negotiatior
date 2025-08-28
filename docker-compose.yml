@@ -1,0 +1,80 @@
+version: '3.8'
+
+services:
+  # Frontend application
+  negotiator-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: negotiator-app
+    ports:
+      - "3000:3000"
+    volumes:
+      # Mount source code for development
+      - ./src:/app/src
+      - ./public:/app/public
+      - ./package.json:/app/package.json
+      - ./vite.config.ts:/app/vite.config.ts
+      - ./tsconfig.json:/app/tsconfig.json
+      - ./tsconfig.node.json:/app/tsconfig.node.json
+      - ./index.html:/app/index.html
+      # Exclude node_modules to use container's version
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+      - CHOKIDAR_USEPOLLING=true
+    networks:
+      - negotiator-network
+    restart: unless-stopped
+
+  # Development server with hot reload
+  negotiator-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: negotiator-dev
+    ports:
+      - "3000:3000"
+    volumes:
+      # Mount source code for development
+      - ./src:/app/src
+      - ./public:/app/public
+      - ./package.json:/app/package.json
+      - ./vite.config.ts:/app/vite.config.ts
+      - ./tsconfig.json:/app/tsconfig.json
+      - ./tsconfig.node.json:/app/tsconfig.node.json
+      - ./index.html:/app/index.html
+      # Exclude node_modules to use container's version
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+      - CHOKIDAR_USEPOLLING=true
+      - WATCHPACK_POLLING=true
+    networks:
+      - negotiator-network
+    restart: unless-stopped
+    profiles:
+      - dev
+
+  # Production build server
+  negotiator-prod:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    container_name: negotiator-prod
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+    networks:
+      - negotiator-network
+    restart: unless-stopped
+    profiles:
+      - prod
+
+networks:
+  negotiator-network:
+    driver: bridge
+
+volumes:
+  node_modules:
